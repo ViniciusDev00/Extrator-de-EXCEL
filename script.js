@@ -56,26 +56,31 @@ const MAPA_MODELO_GRUPO = {
     
 };
 
-// === MAPA DE CORES PARA AGRUPAMENTO ===
+// === MAPA DE CORES PARA AGRUPAMENTO (Para as linhas gerais) ===
 const GRUPO_COLORS = {
-    "A": "E0F7FA", // Azul Claro Suave (Light Cyan)
-    "B": "F1F8E9", // Verde Menta Suave (Pale Green)
-    "C": "FFF3E0", // Âmbar Claro Suave (Very Pale Orange/Amber)
-    "D": "FBE4E4", // Rosa Claro Suave (Very Light Pink)
-    "E": "E8EAF6", // Índigo Claro Suave (Very Light Indigo)
-    "F": "F3E5F5", // Roxo Claro Suave (Very Light Purple/Lavender)
-    "G": "E1F5FE", // Azul Bebê (Very Light Blue)
-    "H": "FFE0B2", // Laranja Claro (Light Orange)
-    "I": "DCF8C6", // Verde Limão (Light Lime Green)
-    "J": "FCE4EC", // Rosa Pastel (Pale Pink)
-    "K": "FFFDE7", // **Amarelo Gema Muito Claro** (Very Light Yellow/Cream)
-    "L": "F0F4C3", // **Verde Oliva Muito Claro** (Very Light Olive/Lime)
-    "M": "E1BEE7", // **Malva/Lilás Pálido** (Pale Mauve/Light Purple)
-    "N": "B2EBF2", // **Ciano/Turquesa Claro** (Light Cyan/Turquoise)
-    "O": "FFCCBC", // **Pêssego/Coral Claro** (Light Peach/Coral)
-
-    // Para grupos não mapeados (se o grupo for o próprio nome do modelo limpo)
+    "A": "E0F7FA", // Azul Claro Suave
+    "B": "F1F8E9", // Verde Menta Suave
+    "C": "FFF3E0", // Âmbar Claro Suave
+    "D": "FBE4E4", // Rosa Claro Suave
+    "E": "E8EAF6", // Índigo Claro Suave
+    "F": "F3E5F5", // Roxo Claro Suave
+    "G": "E1F5FE", // Azul Bebê
+    "H": "FFE0B2", // Laranja Claro
+    "I": "DCF8C6", // Verde Limão
+    "J": "FCE4EC", // Rosa Pastel
+    "K": "FFFDE7", // Amarelo Gema Muito Claro
+    "L": "F0F4C3", // Verde Oliva Muito Claro
+    "M": "E1BEE7", // Malva/Lilás Pálido
+    "N": "B2EBF2", // Ciano/Turquesa Claro
+    "O": "FFCCBC", // Pêssego/Coral Claro
     "N/A": "DDDDDD" 
+};
+
+// === NOVAS CORES PARA O STATUS (Célula Específica) ===
+const STATUS_COLORS = {
+    "A PRODUZIR": "FFCCCC",   // Vermelho Suave
+    "EM MONTAGEM": "FFF59D",  // Amarelo Suave
+    "FINALIZADO": "C8E6C9"    // Verde Suave
 };
 // ====================================================================================
 
@@ -99,7 +104,6 @@ document.addEventListener('DOMContentLoaded', () => {
  * Mapeia o nome do modelo para sua versão padrão, se uma regra existir.
  */
 function mapearModeloEquivalente(modeloLimpo) {
-    // Retorna a letra do GRUPO ou o próprio modelo Limpo (se não mapeado)
     return MAPA_MODELO_GRUPO[modeloLimpo] || modeloLimpo;
 }
 
@@ -117,13 +121,9 @@ function limparPrefixoModelo(modeloOriginal) {
     return modelo.toUpperCase();
 }
 
-/**
- * Função de limpeza de categoria (Permite VIL aparecer).
- */
 function limparCategoria(nomeOriginal) {
     if (typeof nomeOriginal !== 'string') return String(nomeOriginal).trim().toUpperCase();
     let nome = nomeOriginal.trim().toUpperCase();
-    
     nome = nome.replace(/ DE /g, ' ').trim(); 
     nome = nome.replace(/\s\s+/g, ' '); 
     return nome; 
@@ -148,8 +148,9 @@ function gerarBotoesFiltro() {
 }
 
 function selecionarColunas(data, isFiltered) {
-    const colunasPadrao = ['GRUPO', 'LINHA', 'BOJO', 'ALINHAMENTOS', 'DIMENSÃO', 'QUANTIDADE TOTAL'];
-    const colunasGerais = ['GRUPO', 'LINHA', 'BOJO', 'ALINHAMENTOS', 'QUANTIDADE TOTAL'];
+    // Inclui a coluna STATUS
+    const colunasPadrao = ['GRUPO', 'LINHA', 'BOJO', 'ALINHAMENTOS', 'DIMENSÃO', 'STATUS', 'QUANTIDADE TOTAL'];
+    const colunasGerais = ['GRUPO', 'LINHA', 'BOJO', 'ALINHAMENTOS', 'STATUS', 'QUANTIDADE TOTAL'];
 
     let colunasFinais = data[0] && data[0].DIMENSÃO ? colunasPadrao : colunasGerais;
 
@@ -166,15 +167,11 @@ function selecionarColunas(data, isFiltered) {
     });
 }
 
-/**
- * Adiciona o cabeçalho personalizado (apenas o Título) ao topo da planilha.
- */
 function adicionarCabecalhoPersonalizado(ws, nomeRelatorio, dadosIniciais) {
     const colunasChave = Object.keys(dadosIniciais[0]);
     const numColunas = colunasChave.length; 
-    const linhaInicial = 0; // Começa na linha 1 do Excel (índice 0)
+    const linhaInicial = 0; 
     
-    // Título Principal (Linha 1)
     const titulo = `RELATÓRIO OTIMIZADO DE LOTES - ${nomeRelatorio} | ${new Date().toLocaleDateString('pt-BR')}`;
     XLSX.utils.sheet_add_aoa(ws, [[titulo]], { origin: -1 });
     
@@ -184,7 +181,6 @@ function adicionarCabecalhoPersonalizado(ws, nomeRelatorio, dadosIniciais) {
     const tituloCell = XLSX.utils.encode_cell({ r: linhaInicial, c: 0 });
     if (!ws[tituloCell]) ws[tituloCell] = { v: titulo, t: 's' };
 
-    // Layout: Fundo Azul Marinho (003366) e Fonte Maior (16)
     ws[tituloCell].s = {
         font: { name: "Arial", sz: 16, bold: true, color: { rgb: "FFFFFF" } }, 
         alignment: { horizontal: "center", vertical: "center" },
@@ -192,10 +188,8 @@ function adicionarCabecalhoPersonalizado(ws, nomeRelatorio, dadosIniciais) {
         border: { bottom: { style: "medium", color: { rgb: "000000" } } } 
     };
     
-    // Retornamos 1 para indicar que apenas 1 linha (o título) foi adicionada
     return 1; 
 }
-
 
 /**
  * Aplica formatação e estilos no XLSX. 
@@ -206,7 +200,6 @@ function aplicarFormatoBasico(dados, ws, nomeRelatorio, startRow) {
     const colunasChave = Object.keys(dados[0]);
     const numColunas = colunasChave.length;
 
-    // Range da tabela de dados
     const range = { 
         s: { r: startRow, c: 0 }, 
         e: { r: startRow + dados.length, c: numColunas - 1 } 
@@ -215,10 +208,11 @@ function aplicarFormatoBasico(dados, ws, nomeRelatorio, startRow) {
     
     // 1. Largura das Colunas
     ws['!cols'] = colunasChave.map(colName => {
-        let wch = 25; // Padrão
+        let wch = 25; 
         if (colName === 'GRUPO' || colName === 'BOJO') wch = 12; 
         if (colName === 'DIMENSÃO') wch = 15;
         if (colName === 'QUANTIDADE TOTAL') wch = 18;
+        if (colName === 'STATUS') wch = 20; // Largura para status
         if (colName === 'LINHA') wch = 22; 
         return { wch: wch };
     });
@@ -226,9 +220,9 @@ function aplicarFormatoBasico(dados, ws, nomeRelatorio, startRow) {
     // 2. Filtro Automático
     ws['!autofilter'] = { ref: XLSX.utils.encode_range(range) };
     
-    // 3. Estilo do Cabeçalho da Tabela (FUNDO PRETO)
+    // 3. Estilo do Cabeçalho
     const headerStyle = {
-        fill: { fgColor: { rgb: "000000" } }, // Fundo Preto
+        fill: { fgColor: { rgb: "000000" } }, 
         font: { bold: true, color: { rgb: "FFFFFF" }, name: "Arial", sz: 10 }, 
         alignment: { horizontal: "center", vertical: "center" },
         border: { 
@@ -242,29 +236,37 @@ function aplicarFormatoBasico(dados, ws, nomeRelatorio, startRow) {
         font: { name: "Arial", sz: 10 }
     };
     
-    // Aplica estilo ao Cabeçalho da Tabela e ao Corpo
+    // Aplica estilo
     colunasChave.forEach((colName, index) => {
-        // Estilo do Cabeçalho da Tabela
+        // Cabeçalho
         const headerAddress = XLSX.utils.encode_cell({ r: range.s.r, c: range.s.c + index });
         const headerCell = ws[headerAddress];
-        
         if (headerCell) {
             headerCell.s = headerStyle;
-            if (typeof headerCell.v !== 'undefined') {
-                headerCell.t = 's';
-            }
+            if (typeof headerCell.v !== 'undefined') headerCell.t = 's';
         }
 
-        // Estilo do Corpo da Tabela
+        // Corpo da Tabela
         for (let r = range.s.r + 1; r <= range.e.r; r++) {
             const dataCellAddress = XLSX.utils.encode_cell({ r: r, c: range.s.c + index });
             const dataCell = ws[dataCellAddress];
             
-            // === CORES DOS GRUPOS ===
             const grupoAddress = XLSX.utils.encode_cell({ r: r, c: 0 });
             const grupo = (ws[grupoAddress] && ws[grupoAddress].v) || 'N/A';
-            const corGrupo = GRUPO_COLORS[grupo] || GRUPO_COLORS['N/A'];
-            // ========================
+            let corFundo = GRUPO_COLORS[grupo] || GRUPO_COLORS['N/A'];
+
+            // === LÓGICA DE COR PARA COLUNA STATUS ===
+            if (colName === 'STATUS' && dataCell && dataCell.v) {
+                const valorStatus = String(dataCell.v).toUpperCase();
+                if (valorStatus.includes('A PRODUZIR')) {
+                    corFundo = STATUS_COLORS['A PRODUZIR'];
+                } else if (valorStatus.includes('MONTAGEM')) {
+                    corFundo = STATUS_COLORS['EM MONTAGEM'];
+                } else if (valorStatus.includes('FINALIZADO')) {
+                    corFundo = STATUS_COLORS['FINALIZADO'];
+                }
+            }
+            // ========================================
 
             if (dataCell) {
                 const isNumeric = colName === 'QUANTIDADE TOTAL';
@@ -276,46 +278,33 @@ function aplicarFormatoBasico(dados, ws, nomeRelatorio, startRow) {
                     }
                 };
                 
-                // Aplica a cor do GRUPO como fundo da linha
-                const fillStyle = { fill: { fgColor: { rgb: corGrupo } } };
+                const fillStyle = { fill: { fgColor: { rgb: corFundo } } };
                 
-                // Cria o objeto de estilo completo para esta célula
                 dataCell.s = { 
                     ...centerStyle,
                     ...cellBorder,
                     ...fillStyle 
                 };
 
-                // Garante que a célula tem o tipo correto
                 if (isNumeric) {
-                    dataCell.t = 'n'; // Number
+                    dataCell.t = 'n'; 
                 } else if (typeof dataCell.v !== 'undefined') {
-                    dataCell.t = 's'; // String
+                    dataCell.t = 's'; 
                 }
             }
         }
     });
 }
 
-/**
- * Funçao exportarXLSX (CORRIGIDA PARA COMPACTAÇÃO)
- */
 function exportarXLSX(dadosParaExportar, nomeArquivo, isFiltered) {
     const dadosFinais = selecionarColunas(dadosParaExportar, isFiltered);
     
     const ws = {}; 
-    
     const nomeRelatorioLimpo = nomeArquivo.replace(/_/g, ' '); 
-    
-    // 1. Adiciona o TÍTULO na linha 1 (índice 0)
     const totalTitleRows = adicionarCabecalhoPersonalizado(ws, nomeRelatorioLimpo, dadosFinais); 
-    
-    // 2. Os dados (incluindo o cabeçalho da tabela) começam imediatamente após o título (Linha 2, índice 1)
-    // O valor de totalTitleRows agora é 1, garantindo que o START_ROW_DATA seja 1 (Linha 2)
-    const START_ROW_DATA = totalTitleRows; // Deve ser 1
+    const START_ROW_DATA = totalTitleRows; 
+
     XLSX.utils.sheet_add_json(ws, dadosFinais, { origin: START_ROW_DATA, skipHeader: false });
-    
-    // 3. Aplica estilos
     aplicarFormatoBasico(dadosFinais, ws, nomeRelatorioLimpo, START_ROW_DATA);
     
     const wb = XLSX.utils.book_new();
@@ -325,17 +314,13 @@ function exportarXLSX(dadosParaExportar, nomeArquivo, isFiltered) {
     XLSX.writeFile(wb, `${nomeArquivo}_${dataAtual}.xlsx`, { cellStyles: true }); 
 }
 
-/**
- * Funçao exportarPDF (Design mantido)
- */
 function exportarPDF(dadosParaExportar, nomeArquivo, isFiltered) {
     if (typeof window.jspdf === 'undefined' || typeof window.jspdf.jsPDF === 'undefined') {
-        alert("Erro: Biblioteca PDF não carregada. Verifique os links CDN no index.html.");
+        alert("Erro: Biblioteca PDF não carregada.");
         return;
     }
     
     const dadosFinais = selecionarColunas(dadosParaExportar, isFiltered);
-
     const { jsPDF } = window.jspdf;
     const doc = new jsPDF();
     
@@ -345,6 +330,7 @@ function exportarPDF(dadosParaExportar, nomeArquivo, isFiltered) {
         'BOJO': 'Material (BOJO)',
         'ALINHAMENTOS': 'Categoria',
         'DIMENSÃO': 'DIMENSÃO', 
+        'STATUS': 'Status', 
         'QUANTIDADE TOTAL': 'Quantidade Total'
     };
     
@@ -356,23 +342,23 @@ function exportarPDF(dadosParaExportar, nomeArquivo, isFiltered) {
         head: head,
         body: body,
         startY: 20,
-        theme: 'grid', // Tema grid para bordas nítidas
+        theme: 'grid', 
         styles: { 
             fontSize: 9, 
             font: 'helvetica', 
-            textColor: [52, 58, 64] // Texto cinza escuro
+            textColor: [52, 58, 64] 
         },
         headStyles: { 
-            fillColor: [0, 123, 255], // Fundo Azul NSF (Primário)
-            textColor: 255, // Texto Branco
+            fillColor: [0, 123, 255], 
+            textColor: 255, 
             fontStyle: 'bold',
             fontSize: 10
         }, 
         alternateRowStyles: {
-            fillColor: [248, 249, 250] // Linhas alternadas em cinza muito claro
+            fillColor: [248, 249, 250] 
         },
         bodyStyles: {
-            lineColor: [222, 226, 230], // Cor da linha (cinza claro)
+            lineColor: [222, 226, 230], 
             lineWidth: 0.1 
         },
         didDrawPage: function (data) {
@@ -417,10 +403,6 @@ function exportarRelatorio(tipo, formato, filtroCategoria = null) {
     }
 }
 
-
-/**
- * Função principal de processamento.
- */
 function processarPlanilha() {
     const fileInput = document.getElementById('excelFileInput');
     const statusDiv = document.getElementById('statusMessage');
@@ -445,56 +427,68 @@ function processarPlanilha() {
             const sheetName = workbook.SheetNames[0];
             const worksheet = workbook.Sheets[sheetName];
             
-            // Lendo a partir da LINHA 6 (índice 5)
+            // Define o intervalo de leitura na Linha 5 (Índice 4)
             const range = XLSX.utils.decode_range(worksheet['!ref']);
-            range.s.r = 5; // Linha de início dos dados (Linha 6 da planilha)
+            range.s.r = 4; 
             const newRange = XLSX.utils.encode_range(range);
             
             const rawDataAOA = XLSX.utils.sheet_to_json(worksheet, { header: 1, range: newRange }); 
 
-            // === NOVOS ÍNDICES DE COLUNAS (Base 0) ===
-            const INDEX_MODELO = 5;      // Coluna F (ALINHAMENTO)
-            const INDEX_DIMENSAO = 6;    // Coluna G (DIMENSÃO)
-            const INDEX_BOJO = 7;        // Coluna H (BOJO)
-            const INDEX_CATEGORIA = 8;   // Coluna I (LINHA/Setor)
-            
+            if (!rawDataAOA || rawDataAOA.length === 0) {
+                throw new Error("A planilha parece estar vazia ou o intervalo de leitura está incorreto.");
+            }
+
+            const headers = rawDataAOA[0].map(h => String(h || '').toUpperCase().trim());
+            const INDEX_CATEGORIA = headers.indexOf('LINHA');
+            const INDEX_MODELO = headers.indexOf('ALINHAMENTO');
+            const INDEX_BOJO = headers.indexOf('BOJO');
+            const INDEX_DIMENSAO = headers.indexOf('DIMENSÃO');
+            const INDEX_STATUS = headers.indexOf('MONTAGEM'); 
+
+            if (INDEX_CATEGORIA === -1 || INDEX_MODELO === -1) {
+                const headersEncontrados = headers.join(", ");
+                const msg = `Erro Crítico: Colunas não encontradas. Headers: [${headersEncontrados}]`;
+                alert(msg);
+                throw new Error(msg);
+            }
+
             const lotesGeraisMap = {};   
             const lotesDetalhesMap = {}; 
             todasCategorias.clear();
             let linhasProcessadas = 0;
 
-            rawDataAOA.forEach(row => {
-                if (row.length < INDEX_CATEGORIA + 1) return;
+            for (let i = 1; i < rawDataAOA.length; i++) {
+                const row = rawDataAOA[i];
+                const maxIndex = Math.max(INDEX_CATEGORIA, INDEX_MODELO, INDEX_BOJO, INDEX_DIMENSAO);
+                if (row.length <= maxIndex) continue;
 
                 const modeloOriginal = String(row[INDEX_MODELO] || '').trim();
                 const dimensaoOriginal = String(row[INDEX_DIMENSAO] || '').trim();
                 const bojoOriginal = String(row[INDEX_BOJO] || '').trim();
                 const categoriaOriginal = String(row[INDEX_CATEGORIA] || '').trim();
                 
-                // 1. Limpeza e Mapeamento
+                let statusOriginal = "A PRODUZIR";
+                if (INDEX_STATUS !== -1) {
+                    const valorCelula = String(row[INDEX_STATUS] || '').trim().toUpperCase();
+                    if (valorCelula !== "") {
+                        statusOriginal = valorCelula;
+                    }
+                }
+
                 const modeloLimpo = limparPrefixoModelo(modeloOriginal);
-                
-                // Adiciona a letra do GRUPO ou o próprio nome do Modelo
                 const grupoLetra = MAPA_MODELO_GRUPO[modeloLimpo] || modeloLimpo;
-                
                 const categoriaLimpa = limparCategoria(categoriaOriginal); 
-                
-                // Garante que BOJO e DIMENSÃO tenham um valor padrão se vazios ('N/A')
                 const bojoNormalizado = (bojoOriginal || 'N/A').toUpperCase();
                 const dimensaoNormalizada = (dimensaoOriginal || 'N/A').toUpperCase();
 
-
-                // Apenas verifica se o modelo e a categoria estão presentes.
-                if (!modeloLimpo || !categoriaLimpa) return; 
+                if (!modeloLimpo || !categoriaLimpa) continue; 
 
                 linhasProcessadas++;
                 todasCategorias.add(categoriaLimpa);
 
-                // CHAVES DE AGRUPAMENTO
-                const chaveGeral = `${modeloLimpo}|${bojoNormalizado}|${categoriaLimpa}|${grupoLetra}`; 
-                const chaveDetalhe = `${modeloLimpo}|${bojoNormalizado}|${categoriaLimpa}|${dimensaoNormalizada}|${grupoLetra}`; 
+                const chaveGeral = `${modeloLimpo}|${bojoNormalizado}|${categoriaLimpa}|${grupoLetra}|${statusOriginal}`; 
+                const chaveDetalhe = `${modeloLimpo}|${bojoNormalizado}|${categoriaLimpa}|${dimensaoNormalizada}|${grupoLetra}|${statusOriginal}`; 
 
-                // 1. AGRUPAMENTO GERAL (Resumo)
                 if (lotesGeraisMap[chaveGeral]) {
                     lotesGeraisMap[chaveGeral]['QUANTIDADE TOTAL']++;
                 } else {
@@ -503,11 +497,11 @@ function processarPlanilha() {
                         'LINHA': modeloLimpo, 
                         'BOJO': bojoNormalizado,
                         'ALINHAMENTOS': categoriaLimpa,
+                        'STATUS': statusOriginal,
                         'QUANTIDADE TOTAL': 1
                     };
                 }
                 
-                // 2. AGRUPAMENTO DETALHE (Produção - Com Dimensão)
                 if (lotesDetalhesMap[chaveDetalhe]) {
                     lotesDetalhesMap[chaveDetalhe]['QUANTIDADE TOTAL']++;
                 } else {
@@ -517,30 +511,28 @@ function processarPlanilha() {
                         'BOJO': bojoNormalizado,
                         'ALINHAMENTOS': categoriaLimpa,
                         'DIMENSÃO': dimensaoNormalizada, 
+                        'STATUS': statusOriginal, 
                         'QUANTIDADE TOTAL': 1
                     };
                 }
-            });
+            }
 
-            // 3. Finalização e ordenação
             lotesGerais = Object.values(lotesGeraisMap).sort((a, b) => a.LINHA.localeCompare(b.LINHA));
             lotesDetalhes = Object.values(lotesDetalhesMap).sort((a, b) => a.LINHA.localeCompare(b.LINHA));
 
             if (linhasProcessadas === 0) {
-                 statusDiv.textContent = `Nenhuma linha de dados válida processada.`;
+                 statusDiv.textContent = `Nenhuma linha de dados processada.`;
                  document.getElementById('processButton').disabled = false;
                  return;
             }
 
-            statusDiv.textContent = `Processamento concluído! Total de itens contados: ${linhasProcessadas}.`;
-
-            // 4. Habilita a interface de download
+            statusDiv.textContent = `Processamento concluído! Itens: ${linhasProcessadas}.`;
             document.getElementById('downloadSection').style.display = 'block';
             gerarBotoesFiltro(); 
 
         } catch (error) {
-            console.error("Erro fatal durante o processamento:", error);
-            statusDiv.textContent = `Erro fatal! Consulte o console (F12) para o desenvolvedor.`;
+            console.error("Erro:", error);
+            statusDiv.textContent = `Erro: ${error.message}`;
         } finally {
             document.getElementById('processButton').disabled = false;
         }
@@ -548,19 +540,8 @@ function processarPlanilha() {
 
     reader.onerror = function(ex) {
         statusDiv.textContent = 'Erro ao ler o arquivo.';
-        console.error(ex);
         document.getElementById('processButton').disabled = false;
     };
 
     reader.readAsArrayBuffer(file);
 }
-
-// Inicialização do listener de habilitação do botão
-document.addEventListener('DOMContentLoaded', () => {
-    const fileInput = document.getElementById('excelFileInput');
-    const processButton = document.getElementById('processButton');
-    
-    fileInput.addEventListener('change', () => {
-        processButton.disabled = fileInput.files.length === 0;
-    });
-});
