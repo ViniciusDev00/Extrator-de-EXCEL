@@ -314,6 +314,305 @@ function exportarXLSX(dadosParaExportar, nomeArquivo, isFiltered) {
     XLSX.writeFile(wb, `${nomeArquivo}_${dataAtual}.xlsx`, { cellStyles: true }); 
 }
 
+function exportarOrdemProducaoXLSX(dados, nomeArquivo) {
+    if (!dados || dados.length === 0) {
+        alert("Não há dados para exportar.");
+        return;
+    }
+
+    // 1. Agrupar dados
+    const categoriaTitulo = dados[0].ALINHAMENTOS || "GERAL";
+    const agrupado = {};
+
+    dados.forEach(item => {
+        const modelo = item.LINHA || "";
+        const dimensao = item.DIMENSÃO || "";
+        const bojo = (item.BOJO || "").toUpperCase();
+        const qtd = item['QUANTIDADE TOTAL'] || 0;
+
+        if (!modelo) return;
+
+        if (!agrupado[modelo]) agrupado[modelo] = {};
+        if (!agrupado[modelo][dimensao]) {
+            agrupado[modelo][dimensao] = {
+                modelo: modelo,
+                dimensao: dimensao,
+                total: 0,
+                pvc: 0,
+                inox: 0
+            };
+        }
+
+        agrupado[modelo][dimensao].total += qtd;
+        if (bojo.includes('INOX')) {
+            agrupado[modelo][dimensao].inox += qtd;
+        } else {
+            agrupado[modelo][dimensao].pvc += qtd;
+        }
+    });
+
+    // 2. Preparar dados para a planilha
+    const ws_data = [];
+    const merges = [];
+    let currentRow = 0;
+
+    // --- CABEÇALHO GERAL ---
+    // LISTAGEM DE PRODUÇÃO
+    ws_data.push(["LISTAGEM DE PRODUÇÃO"]);
+    merges.push({ s: { r: currentRow, c: 0 }, e: { r: currentRow, c: 7 } });
+    currentRow++;
+
+    // Linha azul (simulada com border bottom na célula anterior na etapa de estilo)
+
+    // --- SUB-CABEÇALHO ---
+    const dataAtual = new Date().toLocaleDateString('pt-BR');
+    ws_data.push([`${categoriaTitulo} (SEM 048 A 050)`, "", "", "", "", "", "DATA:", dataAtual]);
+    merges.push({ s: { r: currentRow, c: 0 }, e: { r: currentRow, c: 5 } });
+    currentRow++;
+
+    // Espaço
+    ws_data.push([""]);
+    currentRow++;
+
+    // --- ITERAR PELOS MODELOS ---
+    let totalGeral = 0;
+    let totalPVC = 0;
+    let totalInox = 0;
+
+    const modelos = Object.keys(agrupado).sort();
+
+    modelos.forEach(modelo => {
+        // Modelo Header
+        ws_data.push([modelo.toUpperCase()]);
+        merges.push({ s: { r: currentRow, c: 0 }, e: { r: currentRow, c: 2 } });
+        const rowModelo = currentRow;
+        currentRow++;
+
+        // Table Headers
+        ws_data.push(["SEQ", "PEDIDO - CLIENTE", "QTD PRODUÇÃO", "PVC", "INOX", "ESTOQUE BOJO PP", "ESTOQUE BOJO INOX", "PRODUZIR"]);
+        const rowHeader = currentRow;
+        currentRow++;
+
+        const dimensoes = Object.keys(agrupado[modelo]).sort((a,b) => {
+            const valA = parseFloat(a.replace(',', '.'));
+            const valB = parseFloat(b.replace(',', '.'));
+            return (valA || 0) - (valB || 0);
+        });
+
+        dimensoes.forEach(dim => {
+            const dadosDim = agrupado[modelo][dim];
+            const nomePedido = `${modelo} ${dim}`;
+
+            ws_data.push([
+                "X",
+                nomePedido,
+                dadosDim.total,
+                dadosDim.pvc,
+                dadosDim.inox,
+                "FABRICAR",
+                "FABRICAR",
+                "FABRICAR"
+            ]);
+            currentRow++;
+
+            // Empty Row (Gap)
+            ws_data.push(["", "", "", "", "", "", "", ""]);
+            currentRow++;
+
+            totalGeral += dadosDim.total;
+            totalPVC += dadosDim.pvc;
+            totalInox += dadosDim.inox;
+        });
+    });
+
+    // --- TOTAIS ---
+    const rowTotais = currentRow;
+    ws_data.push(["", "", totalGeral, totalPVC, totalInox, "", "", ""]);
+    currentRow++;
+
+    // --- CRIAR PLANILHA ---
+    const ws = XLSX.utils.aoa_to_sheet(ws_data);
+    ws['!merges'] = merges;
+    ws['!cols'] = [
+        { wch: 5 },  // SEQ
+        { wch: 40 }, // PEDIDO
+        { wch: 15 }, // QTD
+        { wch: 10 }, // PVC
+        { wch: 10 }, // INOX
+        { wch: 20 }, // ESTOQUE PP
+        { wch: 20 }, // ESTOQUE INOX
+        { wch: 20 }  // PRODUZIR
+    ];
+
+    // --- APLICAR ESTILOS ---
+    const range = XLSX.utils.decode_range(ws['!ref']);
+
+    // Estilo Base
+    const styleCenter = { alignment: { horizontal: "center", vertical: "center" }, font: { name: "Arial", sz: 10 } };
+    const styleBold = { font: { name: "Arial", sz: 10, bold: true } };
+    const borderAll = {
+        top: { style: "thin", color: { rgb: "000000" } },
+        bottom: { style: "thin", color: { rgb: "000000" } },
+        left: { style: "thin", color: { rgb: "000000" } },
+        right: { style: "thin", color: { rgb: "000000" } }
+    };
+    const borderThickBox = {
+        top: { style: "medium", color: { rgb: "000000" } },
+        bottom: { style: "medium", color: { rgb: "000000" } },
+        left: { style: "medium", color: { rgb: "000000" } },
+        right: { style: "medium", color: { rgb: "000000" } }
+    };
+
+    // Estilo Título Principal (Row 0)
+    const cellA1 = XLSX.utils.encode_cell({c:0, r:0});
+    if(ws[cellA1]) {
+        ws[cellA1].s = {
+            font: { name: "Arial", sz: 14, bold: true, color: { rgb: "3366CC" } },
+            alignment: { horizontal: "center" },
+            border: { bottom: { style: "thick", color: { rgb: "3366CC" } } } // Blue bar equivalent
+        };
+    }
+
+    // Sub-cabeçalho (Row 1)
+    const cellA2 = XLSX.utils.encode_cell({c:0, r:1});
+    if(ws[cellA2]) {
+        ws[cellA2].s = {
+            font: { name: "Arial", sz: 12, bold: true },
+            alignment: { horizontal: "left" }
+        };
+    }
+    const cellDataLabel = XLSX.utils.encode_cell({c:6, r:1}); // "DATA:"
+    if(ws[cellDataLabel]) ws[cellDataLabel].s = { font: { bold: true, color: { rgb: "3366CC" } }, alignment: { horizontal: "right" } };
+    const cellDataValue = XLSX.utils.encode_cell({c:7, r:1});
+    if(ws[cellDataValue]) ws[cellDataValue].s = { font: { bold: true, italic: true, color: { rgb: "3366CC" } }, alignment: { horizontal: "center" } };
+
+    // Iterar para aplicar estilos de linhas de dados
+    let r = 3; // Começa após os cabeçalhos (Row 0, 1, 2 empty)
+
+    // Note: r needs to track the logical rows we added.
+    // However, I constructed ws_data sequentially, so I can just iterate through ws_data indices.
+
+    // Helper to find row types is hard because I didn't store metadata per row.
+    // I will iterate range.
+
+    for (let R = 3; R <= range.e.r; ++R) {
+        // Verificar conteúdo da primeira célula para identificar o tipo de linha
+        const cellFirst = ws[XLSX.utils.encode_cell({c:0, r:R})];
+        const valFirst = cellFirst ? cellFirst.v : "";
+
+        // Header da Tabela (SEQ)
+        if (valFirst === "SEQ") {
+            for (let C = 0; C <= 7; ++C) {
+                const cell = ws[XLSX.utils.encode_cell({c:C, r:R})];
+                if (cell) {
+                    cell.s = {
+                        fill: { fgColor: { rgb: "FFF2CC" } }, // Beige
+                        font: { bold: true, sz: 9 },
+                        alignment: { horizontal: "center", vertical: "center" },
+                        border: borderAll
+                    };
+                }
+            }
+            continue;
+        }
+
+        // Linha de Dados (SEQ = X)
+        if (valFirst === "X") {
+            // Coluna SEQ (Boxed X)
+            if (cellFirst) {
+                cellFirst.s = {
+                    alignment: { horizontal: "center", vertical: "center" },
+                    font: { bold: true },
+                    border: borderThickBox
+                };
+            }
+
+            // Colunas de Dados (Preto com Texto Branco)
+            // PEDIDO (1), QTD (2), PVC (3), INOX (4)
+            for (let C = 1; C <= 4; ++C) {
+                const cell = ws[XLSX.utils.encode_cell({c:C, r:R})];
+                if (cell) {
+                    cell.s = {
+                        fill: { fgColor: { rgb: "000000" } },
+                        font: { color: { rgb: "FFFFFF" }, bold: true },
+                        alignment: { horizontal: "center", vertical: "center" },
+                        border: {
+                            top: { style: "thin", color: { rgb: "FFFFFF" } },
+                            bottom: { style: "thin", color: { rgb: "FFFFFF" } },
+                            left: { style: "thin", color: { rgb: "FFFFFF" } },
+                            right: { style: "thin", color: { rgb: "FFFFFF" } }
+                        }
+                    };
+                    if (C === 1) cell.s.alignment.horizontal = "left"; // Pedido align left
+                }
+            }
+
+            // Colunas FABRICAR (5, 6, 7)
+            for (let C = 5; C <= 7; ++C) {
+                const cell = ws[XLSX.utils.encode_cell({c:C, r:R})];
+                if (cell) {
+                    cell.s = {
+                        fill: { fgColor: { rgb: "FFFFFF" } },
+                        font: { color: { rgb: "000000" }, bold: true },
+                        alignment: { horizontal: "center", vertical: "center" },
+                        border: borderThickBox
+                    };
+                }
+            }
+            continue;
+        }
+
+        // Modelo Header (Assume it's the row BEFORE SEQ, but hard to track backwards)
+        // Check if it matches a model name?
+        // Let's assume if it is NOT SEQ, NOT X, NOT Empty, NOT Totals...
+        // And has value in Col 0 but merged...
+
+        // Actually, Totals row has empty first cell.
+        // Empty row has empty first cell.
+
+        // Model Header has value in Col 0 and is not SEQ or X.
+        if (valFirst && valFirst !== "SEQ" && valFirst !== "X" && valFirst !== "LISTAGEM DE PRODUÇÃO" && !String(valFirst).includes("EXPOSITORES")) {
+            // It is likely a Model Header (e.g. VERTICAL ALTOS)
+            const cell = ws[XLSX.utils.encode_cell({c:0, r:R})];
+            if (cell) {
+                cell.s = {
+                    font: { bold: true, sz: 11 },
+                    border: {
+                        top: { style: "double" }, bottom: { style: "double" },
+                        left: { style: "double" }, right: { style: "double" }
+                    },
+                    alignment: { horizontal: "left" }
+                };
+            }
+        }
+
+        // Totals Row (empty first cell, numbers in 2,3,4)
+        if (!valFirst) {
+            const cellTotal = ws[XLSX.utils.encode_cell({c:2, r:R})];
+            if (cellTotal && typeof cellTotal.v === 'number') {
+                // This is the totals row
+                for (let C = 0; C <= 7; ++C) {
+                    const cell = ws[XLSX.utils.encode_cell({c:C, r:R})];
+                    if (cell) {
+                        cell.s = {
+                            border: { top: { style: "double" }, bottom: { style: "double" } },
+                            font: { bold: true },
+                            alignment: { horizontal: "center" }
+                        };
+                    } else {
+                        // Create empty cell for border
+                         ws[XLSX.utils.encode_cell({c:C, r:R})] = { v: "", s: { border: { top: { style: "double" }, bottom: { style: "double" } } } };
+                    }
+                }
+            }
+        }
+    }
+
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "Ordem Produção");
+    XLSX.writeFile(wb, `${nomeArquivo}_${dataAtual.replace(/\//g, '-')}.xlsx`, { cellStyles: true });
+}
+
 function exportarPDF(dadosParaExportar, nomeArquivo, isFiltered) {
     if (typeof window.jspdf === 'undefined' || typeof window.jspdf.jsPDF === 'undefined') {
         alert("Erro: Biblioteca PDF não carregada.");
@@ -397,7 +696,11 @@ function exportarRelatorio(tipo, formato, filtroCategoria = null) {
     }
 
     if (formato === 'xlsx') {
-        exportarXLSX(dadosParaExportar, nomeArquivo, isFiltered); 
+        if (tipo === 'detalhe') {
+             exportarOrdemProducaoXLSX(dadosParaExportar, nomeArquivo);
+        } else {
+             exportarXLSX(dadosParaExportar, nomeArquivo, isFiltered);
+        }
     } else if (formato === 'pdf') {
         exportarPDF(dadosParaExportar, nomeArquivo, isFiltered); 
     }
