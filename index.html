@@ -24,7 +24,7 @@
 
             <div class="input-group">
                 <input type="file" id="excelFileInput" accept=".xlsx, .csv" class="file-input" />
-                <button onclick="processarPlanilha()" disabled id="processButton" class="btn btn-primary">
+                <button onclick="processarPlanilha()" id="processButton" class="btn btn-primary">
                     <span id="processButtonText">Processar Planilha</span>
                 </button>
             </div>
@@ -53,7 +53,7 @@
                 </div>
             </div>
             
-            <div class="report-group filter-group">
+            <div class="report-group filter-group separator">
                 <h3>Opção C: Filtrar por Categoria (Relatório Detalhe) <span class="tag tag-filter">Filtro Rápido</span></h3>
                 <p>Gere a lista de produção filtrada por setores específicos.</p>
                 
@@ -64,6 +64,20 @@
                     <div id="filterColPDF" class="filter-col filter-col-pdf">
                         <h4>Download PDF</h4>
                         </div>
+                </div>
+            </div>
+
+            <div class="report-group filter-group">
+                <h3>Opção D: Ordem de Produção (OP) por Grupo <span class="tag tag-primary">NOVO!</span></h3>
+                <p>Gera a lista detalhada para o chão de fábrica, agrupada e ordenada por GRUPO de produção.</p>
+                
+                <div id="filterButtonsOPContainer" class="filter-buttons-container">
+                    <div id="filterColOPXLSX" class="filter-col filter-col-xlsx">
+                        <h4>Ordem de Produção (XLSX)</h4>
+                    </div>
+                    <div id="filterColOPPDF" class="filter-col filter-col-pdf">
+                        <h4>Ordem de Produção (PDF)</h4>
+                    </div>
                 </div>
             </div>
         </section>
