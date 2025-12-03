@@ -1,0 +1,412 @@
+// op-preview.js - Carrega e exibe os dados da Ordem de Produção
+
+document.addEventListener("DOMContentLoaded", () => {
+    carregarDadosOP();
+    atualizarDataGeracao();
+});
+
+function carregarDadosOP() {
+    // Recuperar dados do localStorage
+    const dadosGrupo = JSON.parse(localStorage.getItem("opGrupoDados"));
+    const grupoSelecionado = localStorage.getItem("opGrupoSelecionado");
+    const todosDados = JSON.parse(localStorage.getItem("lotesDetalhes"));
+
+    if (!dadosGrupo || !grupoSelecionado) {
+        alert("Nenhum dado encontrado. Retornando à página principal.");
+        window.location.href = "index.html";
+        return;
+    }
+
+    // Atualizar informações do cabeçalho
+    atualizarCabecalho(grupoSelecionado, dadosGrupo);
+
+    // Gerar tabela de produção
+    gerarTabelaProducao(dadosGrupo);
+
+    // Atualizar resumo executivo
+    atualizarResumoExecutivo(dadosGrupo);
+}
+
+function atualizarCabecalho(grupo, dados) {
+    const nomeGrupo = obterNomeGrupo(grupo);
+    const categoria = obterCategoriaGrupo(grupo);
+    const semana = obterSemanaAtual();
+    
+    // Calcular totais básicos
+    const totalItens = dados.length;
+    const totalQuantidade = dados.reduce((sum, item) => sum + (parseInt(item["QUANTIDADE TOTAL"]) || 0), 0);
+    
+    // Atualizar elementos
+    document.getElementById("grupoTexto").textContent = `GRUPO ${grupo} - ${nomeGrupo}`;
+    document.getElementById("categoriaTexto").textContent = categoria;
+    document.getElementById("semanaTexto").textContent = semana;
+    document.getElementById("qtdItens").textContent = totalItens;
+    
+    // Gerar código da OP
+    const codigoOp = `OP-${grupo}-${new Date().getFullYear()}${String(new Date().getMonth() + 1).padStart(2, '0')}${String(new Date().getDate()).padStart(2, '0')}`;
+    document.getElementById("codigoOp").textContent = codigoOp;
+}
+
+function gerarTabelaProducao(dados) {
+    const tbody = document.getElementById("tableBody");
+    tbody.innerHTML = "";
+
+    let totalQtd = 0;
+    let totalPvc = 0;
+    let totalInox = 0;
+
+    // Ordenar dados
+    dados.sort((a, b) => {
+        if (a.LINHA !== b.LINHA) return a.LINHA.localeCompare(b.LINHA);
+        if (a.DIMENSÃO !== b.DIMENSÃO) return a.DIMENSÃO.localeCompare(b.DIMENSÃO);
+        return 0;
+    });
+
+    dados.forEach((item, index) => {
+        const dimensao = formatarDimensao(item.DIMENSÃO);
+        const pedidoCliente = `${item.LINHA} ${dimensao}`;
+        const quantidade = parseInt(item["QUANTIDADE TOTAL"]) || 0;
+        const material = (item.BOJO || "").toUpperCase();
+        const isPVC = material.includes("PVC") || material.includes("PP");
+        const qtdPvc = isPVC ? quantidade : 0;
+        const qtdInox = !isPVC ? quantidade : 0;
+
+        totalQtd += quantidade;
+        totalPvc += qtdPvc;
+        totalInox += qtdInox;
+
+        // Determinar status do estoque
+        const estoquePPClass = qtdPvc > 0 ? "estoque-fabricar" : "estoque-ok";
+        const estoquePPText = qtdPvc > 0 ? "FABRICAR" : "-";
+        
+        const estoqueInoxClass = qtdInox > 0 ? "estoque-fabricar" : "estoque-ok";
+        const estoqueInoxText = qtdInox > 0 ? "FABRICAR" : "-";
+
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+            <td class="col-item">${index + 1}</td>
+            <td class="col-pedido">
+                <div style="font-weight: 600; color: var(--neutral-800);">${item.LINHA}</div>
+                <div style="font-size: 0.75rem; color: var(--neutral-600); margin-top: 2px;">
+                    Dimensão: ${dimensao}
+                </div>
+                <div style="font-size: 0.7rem; color: var(--neutral-500); margin-top: 1px;">
+                    Material: ${item.BOJO || 'N/A'}
+                </div>
+            </td>
+            <td class="col-qtd" style="font-weight: 600; color: var(--neutral-900);">
+                ${quantidade.toLocaleString()}
+            </td>
+            <td class="col-pvc" style="${qtdPvc > 0 ? 'color: #0369a1; font-weight: 700;' : 'color: var(--neutral-500);'}">
+                ${qtdPvc > 0 ? qtdPvc.toLocaleString() : '-'}
+            </td>
+            <td class="col-inox" style="${qtdInox > 0 ? 'color: var(--neutral-800); font-weight: 700;' : 'color: var(--neutral-500);'}">
+                ${qtdInox > 0 ? qtdInox.toLocaleString() : '-'}
+            </td>
+            <td class="col-estoque">
+                <span class="estoque-badge ${estoquePPClass}">${estoquePPText}</span>
+            </td>
+            <td class="col-estoque">
+                <span class="estoque-badge ${estoqueInoxClass}">${estoqueInoxText}</span>
+            </td>
+            <td class="col-acao">
+                <button class="acao-button" onclick="produzirItem(${index})">
+                    <i class="fas fa-play"></i> PRODUZIR
+                </button>
+            </td>
+        `;
+
+        tbody.appendChild(tr);
+    });
+
+    // Atualizar totais da tabela
+    document.getElementById("totalQtd").textContent = totalQtd.toLocaleString();
+    document.getElementById("totalPvc").textContent = totalPvc.toLocaleString();
+    document.getElementById("totalInox").textContent = totalInox.toLocaleString();
+
+    // Atualizar estatísticas
+    document.getElementById("totalItems").textContent = dados.length;
+    
+    // Atualizar horário de geração
+    const now = new Date();
+    const timeString = now.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+    document.getElementById("generationTime").textContent = timeString;
+}
+
+function atualizarResumoExecutivo(dados) {
+    const totalUnidades = dados.reduce((sum, item) => sum + (parseInt(item["QUANTIDADE TOTAL"]) || 0), 0);
+    const totalPVC = dados.reduce((sum, item) => {
+        const material = (item.BOJO || "").toUpperCase();
+        const isPVC = material.includes("PVC") || material.includes("PP");
+        return sum + (isPVC ? (parseInt(item["QUANTIDADE TOTAL"]) || 0) : 0);
+    }, 0);
+    const totalINOX = totalUnidades - totalPVC;
+    
+    // Atualizar valores principais
+    document.getElementById("totalUnidades").textContent = totalUnidades.toLocaleString();
+    document.getElementById("totalPvcResumo").textContent = totalPVC.toLocaleString();
+    document.getElementById("totalInoxResumo").textContent = totalINOX.toLocaleString();
+    
+    // Calcular porcentagens
+    const pvcPercentage = totalUnidades > 0 ? Math.round((totalPVC / totalUnidades) * 100) : 0;
+    const inoxPercentage = totalUnidades > 0 ? Math.round((totalINOX / totalUnidades) * 100) : 0;
+    
+    document.getElementById("pvcPercentage").textContent = `${pvcPercentage}%`;
+    document.getElementById("inoxPercentage").textContent = `${inoxPercentage}%`;
+    
+    // Atualizar barras de progresso
+    document.getElementById("pvcProgress").style.width = `${pvcPercentage}%`;
+    document.getElementById("inoxProgress").style.width = `${inoxPercentage}%`;
+    
+    // Calcular eficiência (baseado na distribuição balanceada)
+    let efficiency;
+    if (totalUnidades === 0) {
+        efficiency = 100;
+    } else {
+        // Eficiência máxima quando há balanceamento entre PVC e INOX
+        const balanceScore = 100 - Math.abs(pvcPercentage - 50);
+        const volumeScore = Math.min(100, (totalUnidades / 50) * 100); // 50 unidades = 100%
+        efficiency = Math.round((balanceScore * 0.6) + (volumeScore * 0.4));
+    }
+    
+    document.getElementById("efficiencyScore").textContent = `${efficiency}%`;
+    
+    // Atualizar indicador de eficiência
+    const efficiencyDot = document.getElementById("efficiencyDot");
+    if (efficiency >= 80) {
+        efficiencyDot.className = "indicator-dot high";
+    } else if (efficiency >= 60) {
+        efficiencyDot.className = "indicator-dot";
+    } else {
+        efficiencyDot.className = "indicator-dot low";
+    }
+    
+    // Atualizar badge de prioridade
+    const priorityBadge = document.getElementById("priorityBadge");
+    if (totalUnidades > 100) {
+        priorityBadge.innerHTML = '<i class="fas fa-flag"></i> ALTA PRIORIDADE';
+        priorityBadge.style.background = 'linear-gradient(135deg, #fef3c7 0%, #fde68a 100%)';
+        priorityBadge.style.borderColor = '#f59e0b';
+        priorityBadge.style.color = '#92400e';
+    } else if (totalUnidades > 50) {
+        priorityBadge.innerHTML = '<i class="fas fa-flag"></i> MÉDIA PRIORIDADE';
+        priorityBadge.style.background = 'linear-gradient(135deg, #dbeafe 0%, #93c5fd 100%)';
+        priorityBadge.style.borderColor = '#3b82f6';
+        priorityBadge.style.color = '#1e40af';
+    } else {
+        priorityBadge.innerHTML = '<i class="fas fa-flag"></i> PRIORIDADE NORMAL';
+        priorityBadge.style.background = '';
+        priorityBadge.style.borderColor = '';
+        priorityBadge.style.color = '';
+    }
+    
+    // Atualizar observações baseadas nos dados
+    const observacoes = document.getElementById("observacoesTexto");
+    let textoObservacoes = "Verificar estoque de materiais antes da produção. ";
+    
+    if (totalPVC > totalINOX * 2) {
+        textoObservacoes += "Atenção: Alta demanda de PVC. Verificar disponibilidade no estoque. ";
+    } else if (totalINOX > totalPVC * 2) {
+        textoObservacoes += "Atenção: Alta demanda de INOX. Planejar corte com antecedência. ";
+    }
+    
+    if (dados.length > 20) {
+        textoObservacoes += "Lote grande - considerar divisão em turnos. ";
+    }
+    
+    observacoes.textContent = textoObservacoes;
+}
+
+function atualizarDataGeracao() {
+    const agora = new Date();
+    const dataFormatada = `${String(agora.getDate()).padStart(2, '0')}/${String(agora.getMonth() + 1).padStart(2, '0')}/${agora.getFullYear()}`;
+    const hora = `${String(agora.getHours()).padStart(2, '0')}:${String(agora.getMinutes()).padStart(2, '0')}`;
+    
+    document.getElementById("dataGeracao").textContent = `${dataFormatada} às ${hora}`;
+}
+
+function fecharVisualizacao() {
+    if (confirm("Deseja fechar a visualização da Ordem de Produção?")) {
+        window.history.back();
+    }
+}
+
+function exportarPDF() {
+    // Temporariamente exibe uma mensagem enquanto implementa o PDF
+    alert("Função de exportação PDF será implementada em breve.\nEnquanto isso, use a função de impressão do navegador.");
+    
+    // Alternativa: abrir diálogo de impressão
+    // window.print();
+}
+
+function produzirItem(index) {
+    // Simulação de início de produção
+    const botoes = document.querySelectorAll('.acao-button');
+    if (botoes[index]) {
+        const botaoOriginal = botoes[index].innerHTML;
+        botoes[index].innerHTML = '<i class="fas fa-spinner fa-spin"></i> INICIADO';
+        botoes[index].style.background = 'linear-gradient(135deg, #059669 0%, #10b981 100%)';
+        botoes[index].disabled = true;
+        
+        // Mostrar notificação
+        mostrarNotificacao(`Produção do item ${index + 1} iniciada`, 'success');
+        
+        // Reverter após 3 segundos (simulação)
+        setTimeout(() => {
+            botoes[index].innerHTML = botaoOriginal;
+            botoes[index].style.background = 'linear-gradient(135deg, var(--primary-main) 0%, var(--primary-light) 100%)';
+            botoes[index].disabled = false;
+        }, 3000);
+    }
+}
+
+function mostrarNotificacao(mensagem, tipo) {
+    // Criar elemento de notificação
+    const notificacao = document.createElement('div');
+    notificacao.className = `notificacao ${tipo}`;
+    notificacao.innerHTML = `
+        <i class="fas fa-${tipo === 'success' ? 'check-circle' : 'exclamation-circle'}"></i>
+        <span>${mensagem}</span>
+        <button onclick="this.parentElement.remove()">
+            <i class="fas fa-times"></i>
+        </button>
+    `;
+    
+    // Estilos inline para a notificação
+    notificacao.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        background: ${tipo === 'success' ? '#10b981' : '#ef4444'};
+        color: white;
+        padding: 12px 16px;
+        border-radius: 8px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        z-index: 1000;
+        animation: slideIn 0.3s ease;
+    `;
+    
+    document.body.appendChild(notificacao);
+    
+    // Remover após 5 segundos
+    setTimeout(() => {
+        if (notificacao.parentElement) {
+            notificacao.remove();
+        }
+    }, 5000);
+}
+
+// Adicionar estilos CSS para animação
+const style = document.createElement('style');
+style.textContent = `
+    @keyframes slideIn {
+        from {
+            transform: translateX(100%);
+            opacity: 0;
+        }
+        to {
+            transform: translateX(0);
+            opacity: 1;
+        }
+    }
+    
+    .notificacao button {
+        background: transparent;
+        border: none;
+        color: white;
+        cursor: pointer;
+        padding: 4px;
+        margin-left: 10px;
+    }
+    
+    .notificacao button:hover {
+        opacity: 0.8;
+    }
+`;
+document.head.appendChild(style);
+
+// Funções auxiliares (mantidas do original)
+function obterNomeGrupo(grupo) {
+    const nomes = {
+        A: "VERTICAL ALTOS",
+        B: "VERTICAL ALTOS",
+        C: "VERTICAL ALTOS",
+        D: "AÇOUGUE CURVO",
+        E: "AÇOUGUE CURVO",
+        F: "ILHAS",
+        G: "ILHAS CANTO",
+        H: "ILHAS",
+        I: "REFRIGERAÇÃO",
+        J: "REFRIGERAÇÃO ALTA",
+        K: "ILHAS PONTA",
+        L: "ILHAS 3P",
+        M: "INTELIGENTE",
+        N: "AÇOUGUE",
+        O: "INTELIGENTE",
+    };
+    return nomes[grupo] || `GRUPO ${grupo}`;
+}
+
+function obterCategoriaGrupo(grupo) {
+    const categorias = {
+        A: "EXPOSITORES - REFRIGERAÇÃO",
+        B: "EXPOSITORES - REFRIGERAÇÃO",
+        C: "EXPOSITORES - REFRIGERAÇÃO",
+        D: "EXPOSITORES - AÇOUGUE",
+        E: "EXPOSITORES - AÇOUGUE",
+        F: "ILHAS - CONGELADOS",
+        G: "ILHAS - CONGELADOS",
+        H: "ILHAS - CONGELADOS",
+        I: "REFRIGERAÇÃO",
+        J: "REFRIGERAÇÃO ALTA",
+        K: "ILHAS - PONTA",
+        L: "ILHAS - 3P",
+        M: "INTELIGENTE",
+        N: "AÇOUGUE",
+        O: "INTELIGENTE",
+    };
+    return categorias[grupo] || "EXPOSITORES";
+}
+
+function obterSemanaAtual() {
+    const hoje = new Date();
+    const inicioAno = new Date(hoje.getFullYear(), 0, 1);
+    const dias = Math.floor((hoje - inicioAno) / (24 * 60 * 60 * 1000));
+    const semana = Math.ceil((dias + 1) / 7);
+    return `SEMANA ${String(semana).padStart(2, "0")}`;
+}
+
+function formatarDimensao(dimensao) {
+    if (!dimensao || dimensao === "N/A") return "N/A";
+    
+    let dim = String(dimensao).replace(/\s/g, "").replace(".", ",");
+    
+    if (!dim.includes(",")) {
+        dim = dim + ",00";
+    } else {
+        const partes = dim.split(",");
+        if (partes[1].length === 1) {
+            dim = dim + "0";
+        } else if (partes[1].length > 2) {
+            dim = partes[0] + "," + partes[1].substring(0, 2);
+        }
+    }
+    
+    return dim;
+}
+
+// Função para atualizar periodicamente (opcional)
+function iniciarAtualizacaoPeriodica() {
+    // Atualiza a cada 30 segundos (opcional)
+    setInterval(() => {
+        const agora = new Date();
+        const timeString = agora.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+        document.getElementById("generationTime").textContent = timeString;
+    }, 30000);
+}
+
+// Iniciar atualização periódica (descomente se quiser)
+// iniciarAtualizacaoPeriodica();

@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ordem de Produção | NSF</title>
+    <link rel="stylesheet" href="op-preview.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="page">
+        <!-- Cabeçalho profissional -->
+        <div class="header-section">
+            <div class="logo-container">
+                <div class="logo-nsf">
+                    <img src="logo.png" alt="Logo" class="logo-img">
+                </div>
+                <div>
+                    <h2>NSF INDUSTRIAL</h2>
+                    <p>Sistema de Produção PCP</p>
+                </div>
+            </div>
+            <div class="company-info">
+                <h2>ORDEM DE PRODUÇÃO</h2>
+                <p>Documento Interno</p>
+            </div>
+        </div>
+
+        <!-- Título principal -->
+        <div class="page-title">
+            <h1>LISTAGEM DE PRODUÇÃO</h1>
+            <div class="info-label" style="text-align: center; margin-top: 8px;">
+                Documento gerado em: <span id="dataGeracao">24/11/2025</span>
+            </div>
+        </div>
+
+        <!-- Informações da OP -->
+        <div class="op-info-grid">
+            <div class="info-item">
+                <span class="info-label">Grupo de Produção</span>
+                <span id="grupoTexto" class="info-value">GRUPO A</span>
+            </div>
+            <div class="info-item">
+                <span class="info-label">Categoria</span>
+                <span id="categoriaTexto" class="info-value">EXPOSITORES - REFRIGERAÇÃO</span>
+            </div>
+            <div class="info-item">
+                <span class="info-label">Semana</span>
+                <span id="semanaTexto" class="info-value">SEMANA 47</span>
+            </div>
+            <div class="info-item">
+                <span class="info-label">Qtd. Itens</span>
+                <span id="qtdItens" class="info-value">15</span>
+            </div>
+        </div>
+
+        <!-- Observações -->
+        <div class="observations-section">
+            <h4><i class="fas fa-info-circle"></i> OBSERVAÇÕES</h4>
+            <p id="observacoesTexto">Verificar estoque de materiais antes da produção. Priorizar pedidos com urgência.</p>
+        </div>
+
+        <!-- Tabela Principal Aprimorada -->
+        <section class="production-section">
+            <div class="section-header">
+                <h3><i class="fas fa-clipboard-list"></i> LISTA DE PRODUÇÃO</h3>
+                <div class="table-stats">
+                    <span class="stat-item">
+                        <i class="fas fa-boxes"></i>
+                        <span id="totalItems">0</span> itens
+                    </span>
+                    <span class="stat-item">
+                        <i class="fas fa-clock"></i>
+                        <span id="generationTime">Agora</span>
+                    </span>
+                </div>
+            </div>
+            
+            <div class="table-container">
+                <table class="production-table">
+                    <thead>
+                        <tr>
+                            <th class="col-item">ITEM</th>
+                            <th class="col-pedido">PEDIDO / CLIENTE</th>
+                            <th class="col-qtd">QTD TOTAL</th>
+                            <th class="col-pvc">PVC</th>
+                            <th class="col-inox">INOX</th>
+                            <th class="col-estoque">ESTOQUE PP</th>
+                            <th class="col-estoque">ESTOQUE INOX</th>
+                            <th class="col-acao">AÇÃO</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tableBody">
+                        <!-- Linhas serão preenchidas via JavaScript -->
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Totais da Tabela -->
+            <div class="table-totals">
+                <div class="table-totals-grid">
+                    <div class="total-label">
+                        <i class="fas fa-calculator"></i>
+                        TOTAIS DA TABELA
+                    </div>
+                    <div class="total-item">
+                        <span class="total-subtitle">Quantidade Total</span>
+                        <span id="totalQtd" class="total-value">0</span>
+                    </div>
+                    <div class="total-item">
+                        <span class="total-subtitle">PVC</span>
+                        <span id="totalPvc" class="total-value pvc-total">0</span>
+                    </div>
+                    <div class="total-item">
+                        <span class="total-subtitle">INOX</span>
+                        <span id="totalInox" class="total-value inox-total">0</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Resumo Executivo -->
+        <section class="executive-summary">
+            <div class="summary-header">
+                <h4><i class="fas fa-chart-pie"></i> RESUMO EXECUTIVO</h4>
+                <span class="summary-badge" id="priorityBadge">
+                    <i class="fas fa-flag"></i> PRIORIDADE NORMAL
+                </span>
+            </div>
+            
+            <div class="summary-grid">
+                <div class="summary-card total-units">
+                    <div class="summary-icon">
+                        <i class="fas fa-cubes"></i>
+                    </div>
+                    <div class="summary-content">
+                        <div class="summary-label">TOTAL UNIDADES</div>
+                        <div id="totalUnidades" class="summary-value">0</div>
+                        <div class="summary-subtext">Unidades totais para produção</div>
+                    </div>
+                    <div class="summary-trend">
+                        <i class="fas fa-chart-line"></i>
+                    </div>
+                </div>
+                
+                <div class="summary-card pvc-summary">
+                    <div class="summary-icon">
+                        <i class="fas fa-tint"></i>
+                    </div>
+                    <div class="summary-content">
+                        <div class="summary-label">TOTAL PVC</div>
+                        <div id="totalPvcResumo" class="summary-value">0</div>
+                        <div class="summary-subtext">
+                            <span id="pvcPercentage">0%</span> do total
+                        </div>
+                    </div>
+                    <div class="summary-progress">
+                        <div class="progress-bar">
+                            <div class="progress-fill" id="pvcProgress"></div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="summary-card inox-summary">
+                    <div class="summary-icon">
+                        <i class="fas fa-industry"></i>
+                    </div>
+                    <div class="summary-content">
+                        <div class="summary-label">TOTAL INOX</div>
+                        <div id="totalInoxResumo" class="summary-value">0</div>
+                        <div class="summary-subtext">
+                            <span id="inoxPercentage">0%</span> do total
+                        </div>
+                    </div>
+                    <div class="summary-progress">
+                        <div class="progress-bar">
+                            <div class="progress-fill" id="inoxProgress"></div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="summary-card efficiency">
+                    <div class="summary-icon">
+                        <i class="fas fa-bolt"></i>
+                    </div>
+                    <div class="summary-content">
+                        <div class="summary-label">EFICIÊNCIA</div>
+                        <div id="efficiencyScore" class="summary-value">0%</div>
+                        <div class="summary-subtext">Otimização de lotes</div>
+                    </div>
+                    <div class="summary-indicator">
+                        <div class="indicator-dot" id="efficiencyDot"></div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Assinaturas -->
+        <div class="signatures-section">
+            <div class="signatures-grid">
+                <div class="signature-box">
+                    <div class="signature-line"></div>
+                    <div class="signature-label">Planejamento (PCP)</div>
+                </div>
+                <div class="signature-box">
+                    <div class="signature-line"></div>
+                    <div class="signature-label">Supervisor Produção</div>
+                </div>
+                <div class="signature-box">
+                    <div class="signature-line"></div>
+                    <div class="signature-label">Operador 01</div>
+                </div>
+                <div class="signature-box">
+                    <div class="signature-line"></div>
+                    <div class="signature-label">Operador 02</div>
+                </div>
+            </div>
+            
+            <div class="op-code">
+                <p>Documento válido por 7 dias | Código: <strong id="codigoOp">OP-0001</strong></p>
+            </div>
+        </div>
+
+        <!-- Botões de ação -->
+        <div class="action-buttons no-print">
+            <button onclick="window.print()" class="btn btn-print">
+                <i class="fas fa-print"></i> IMPRIMIR ORDEM
+            </button>
+            <button onclick="fecharVisualizacao()" class="btn btn-close">
+                <i class="fas fa-times"></i> FECHAR
+            </button>
+            <button onclick="exportarPDF()" class="btn btn-pdf">
+                <i class="fas fa-file-pdf"></i> EXPORTAR PDF
+            </button>
+        </div>
+    </div>
+
+    <script src="op-preview.js"></script>
+</body>
+</html>

@@ -7,16 +7,17 @@
     <link rel="stylesheet" href="styles.css">
     
     <script src="https://cdn.jsdelivr.net/npm/xlsx-js-style@1.2.0/dist/xlsx.min.js"></script>
-
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.1/jspdf.plugin.autotable.min.js"></script>
 </head>
 <body>
     <div class="container">
-        <header>
-            <h1 class="logo">NSF</h1>
-            <h1>Otimizador de Lotes | PCP</h1>
-        </header>
+        
+                    <div class="logo-container">
+                <img src="Logo_NSF_C.png" alt="Logo da Empresa" class="logo-img" style="height: 60px;">
+                <div>
+                    <h2>Sistema Industrial</h2>
+                    <p> PCP</p>
+                </div>
+            </div>
 
         <section class="card upload-section">
             <h2>Passo 1: Carregar Dados</h2>
@@ -60,24 +61,26 @@
                 <div id="filterButtonsContainer" class="filter-buttons-container">
                     <div id="filterColXLSX" class="filter-col filter-col-xlsx">
                         <h4>Download XLSX</h4>
-                        </div>
+                    </div>
                     <div id="filterColPDF" class="filter-col filter-col-pdf">
                         <h4>Download PDF</h4>
-                        </div>
+                    </div>
                 </div>
             </div>
 
             <div class="report-group filter-group">
                 <h3>Opção D: Ordem de Produção (OP) por Grupo <span class="tag tag-primary">NOVO!</span></h3>
-                <p>Gera a lista detalhada para o chão de fábrica, agrupada e ordenada por GRUPO de produção.</p>
+                <p>Gera o formulário de produção idêntico ao modelo PDF, com layout profissional para o chão de fábrica.</p>
                 
                 <div id="filterButtonsOPContainer" class="filter-buttons-container">
-                    <div id="filterColOPXLSX" class="filter-col filter-col-xlsx">
-                        <h4>Ordem de Produção (XLSX)</h4>
+                    <div id="filterColOP" class="filter-col" style="flex: 1; border-color: #007bff;">
+                        <h4 style="color: #007bff;">Pré-visualizar Ordem de Produção</h4>
+                        <!-- Os botões serão gerados dinamicamente aqui -->
                     </div>
-                    <div id="filterColOPPDF" class="filter-col filter-col-pdf">
-                        <h4>Ordem de Produção (PDF)</h4>
-                    </div>
+                </div>
+                
+                <div class="note">
+                    <small><strong>Nota:</strong> Clique em um grupo para ver a pré-visualização da Ordem de Produção em formato idêntico ao PDF.</small>
                 </div>
             </div>
         </section>

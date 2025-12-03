@@ -91,6 +91,12 @@ header h1 {
   gap: 10px;
 }
 
+.report-group p {
+  margin-bottom: 15px;
+  color: #6c757d;
+  font-size: 0.95rem;
+}
+
 /* Tags Visuais */
 .tag {
   font-size: 0.75rem;
@@ -109,9 +115,8 @@ header h1 {
   color: #856404;
 }
 
-/* NOVO: Tag para Ordem de Produção */
 .tag-primary {
-  background-color: #cce5ff; /* Cor clara do primary */
+  background-color: #cce5ff;
   color: var(--primary-color);
 }
 
@@ -169,8 +174,10 @@ header h1 {
 
 .file-input {
   flex-grow: 1;
-  padding: 10px 0;
-  border: none;
+  padding: 10px;
+  border: 1px solid #ced4da;
+  border-radius: 5px;
+  background-color: white;
 }
 
 .btn-row {
@@ -180,7 +187,6 @@ header h1 {
 }
 
 /* --- DUAS COLUNAS DE FILTRAGEM (Opção C e D) --- */
-
 .filter-buttons-container {
   display: flex;
   gap: 20px;
@@ -214,6 +220,7 @@ header h1 {
 
 .filter-col-xlsx .btn {
   background-color: #e9ecef;
+  color: #495057;
 }
 
 .filter-col-xlsx .btn:hover {
@@ -222,10 +229,22 @@ header h1 {
 
 .filter-col-pdf .btn {
   background-color: #dee2e6;
+  color: #495057;
 }
 
 .filter-col-pdf .btn:hover {
   background-color: #c0c6cc;
+}
+
+/* Nota informativa */
+.note {
+  margin-top: 15px;
+  padding: 10px;
+  background-color: #f8f9fa;
+  border-left: 4px solid var(--primary-color);
+  border-radius: 4px;
+  font-size: 0.9rem;
+  color: #6c757d;
 }
 
 /* Status Message */
@@ -258,6 +277,10 @@ footer h4 {
   .filter-buttons-container {
     flex-direction: column;
   }
+  
+  .filter-col {
+    width: 100%;
+  }
 }
 
 @media (max-width: 600px) {
@@ -270,5 +293,11 @@ footer h4 {
   .btn-secondary,
   .btn-success {
     width: 100%;
+  }
+  
+  header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
   }
 }
