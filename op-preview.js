@@ -55,16 +55,24 @@ function gerarTabelaProducao(dados) {
     let totalPvc = 0;
     let totalInox = 0;
 
+    // Obtém o grupo da primeira peça (assumindo que todos pertencem ao mesmo grupo)
+    const grupoSelecionado = dados[0].GRUPO;
+    const nomeGrupo = obterNomeGrupo(grupoSelecionado);
+    
     // Ordenar dados
     dados.sort((a, b) => {
-        if (a.LINHA !== b.LINHA) return a.LINHA.localeCompare(b.LINHA);
+        // Agora ordenamos apenas pela dimensão e material, já que o nome do grupo é o mesmo
         if (a.DIMENSÃO !== b.DIMENSÃO) return a.DIMENSÃO.localeCompare(b.DIMENSÃO);
+        if (a.BOJO !== b.BOJO) return a.BOJO.localeCompare(b.BOJO);
         return 0;
     });
 
     dados.forEach((item, index) => {
         const dimensao = formatarDimensao(item.DIMENSÃO);
-        const pedidoCliente = `${item.LINHA} ${dimensao}`;
+        
+        // NOVO: Usa a descrição do grupo em vez da sigla da peça
+        const nomeParaExibir = `${nomeGrupo.toUpperCase()} - ${dimensao}`;
+        
         const quantidade = parseInt(item["QUANTIDADE TOTAL"]) || 0;
         const material = (item.BOJO || "").toUpperCase();
         const isPVC = material.includes("PVC") || material.includes("PP");
@@ -86,11 +94,8 @@ function gerarTabelaProducao(dados) {
         tr.innerHTML = `
             <td class="col-item">${index + 1}</td>
             <td class="col-pedido">
-                <div style="font-weight: 600; color: var(--neutral-800);">${item.LINHA}</div>
-                <div style="font-size: 0.75rem; color: var(--neutral-600); margin-top: 2px;">
-                    Dimensão: ${dimensao}
-                </div>
-                <div style="font-size: 0.7rem; color: var(--neutral-500); margin-top: 1px;">
+                <div style="font-weight: 600; color: var(--neutral-800);">${nomeParaExibir}</div>
+                <div style="font-size: 0.75rem; color: var(--neutral-500); margin-top: 1px;">
                     Material: ${item.BOJO || 'N/A'}
                 </div>
             </td>
@@ -124,13 +129,7 @@ function gerarTabelaProducao(dados) {
     document.getElementById("totalPvc").textContent = totalPvc.toLocaleString();
     document.getElementById("totalInox").textContent = totalInox.toLocaleString();
 
-    // Atualizar estatísticas
-    document.getElementById("totalItems").textContent = dados.length;
-    
-    // Atualizar horário de geração
-    const now = new Date();
-    const timeString = now.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
-    document.getElementById("generationTime").textContent = timeString;
+    // REMOVIDO: Linhas que atualizavam os elementos de estatísticas da tabela (totalItems e generationTime)
 }
 
 function atualizarResumoExecutivo(dados) {
@@ -200,21 +199,7 @@ function atualizarResumoExecutivo(dados) {
         priorityBadge.style.color = '';
     }
     
-    // Atualizar observações baseadas nos dados
-    const observacoes = document.getElementById("observacoesTexto");
-    let textoObservacoes = "Verificar estoque de materiais antes da produção. ";
-    
-    if (totalPVC > totalINOX * 2) {
-        textoObservacoes += "Atenção: Alta demanda de PVC. Verificar disponibilidade no estoque. ";
-    } else if (totalINOX > totalPVC * 2) {
-        textoObservacoes += "Atenção: Alta demanda de INOX. Planejar corte com antecedência. ";
-    }
-    
-    if (dados.length > 20) {
-        textoObservacoes += "Lote grande - considerar divisão em turnos. ";
-    }
-    
-    observacoes.textContent = textoObservacoes;
+    // REMOVIDA LÓGICA DE ATUALIZAÇÃO DE OBSERVAÇÕES
 }
 
 function atualizarDataGeracao() {
@@ -222,6 +207,7 @@ function atualizarDataGeracao() {
     const dataFormatada = `${String(agora.getDate()).padStart(2, '0')}/${String(agora.getMonth() + 1).padStart(2, '0')}/${agora.getFullYear()}`;
     const hora = `${String(agora.getHours()).padStart(2, '0')}:${String(agora.getMinutes()).padStart(2, '0')}`;
     
+    // Esta linha preenche o campo no cabeçalho.
     document.getElementById("dataGeracao").textContent = `${dataFormatada} às ${hora}`;
 }
 
@@ -332,20 +318,17 @@ document.head.appendChild(style);
 function obterNomeGrupo(grupo) {
     const nomes = {
         A: "VERTICAL ALTOS",
-        B: "VERTICAL ALTOS",
-        C: "VERTICAL ALTOS",
-        D: "AÇOUGUE CURVO",
-        E: "AÇOUGUE CURVO",
-        F: "ILHAS",
-        G: "ILHAS CANTO",
-        H: "ILHAS",
-        I: "REFRIGERAÇÃO",
-        J: "REFRIGERAÇÃO ALTA",
-        K: "ILHAS PONTA",
-        L: "ILHAS 3P",
-        M: "INTELIGENTE",
-        N: "AÇOUGUE",
-        O: "INTELIGENTE",
+        B: "AÇOUGUE CURVO",
+        C: "ESPECIAIS",
+        D: "ESPECIAIS 90",
+        E: "ESPECIAIS COM PORTA",
+        F: "PADARIA ESS",
+        G: "AÇOUGUE RETO",
+        H: "ESPECIAS 180",
+        I: "ESPECIAIS 3P",
+        J: "ILHAS CONGELADAS",
+        K: "PADARIA CURVA",
+        L: "ACOPLADO",
     };
     return nomes[grupo] || `GRUPO ${grupo}`;
 }
@@ -397,16 +380,3 @@ function formatarDimensao(dimensao) {
     
     return dim;
 }
-
-// Função para atualizar periodicamente (opcional)
-function iniciarAtualizacaoPeriodica() {
-    // Atualiza a cada 30 segundos (opcional)
-    setInterval(() => {
-        const agora = new Date();
-        const timeString = agora.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
-        document.getElementById("generationTime").textContent = timeString;
-    }, 30000);
-}
-
-// Iniciar atualização periódica (descomente se quiser)
-// iniciarAtualizacaoPeriodica();

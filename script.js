@@ -85,19 +85,13 @@ const MAPA_MODELO_GRUPO = {
   "VABP/850": "A",
   "VABP/750": "A",
   "VALP/850 MA": "A",
-
-  // Grupo B (VAH/850)
-  "VAH/850": "B",
-  "VAL/850": "B",
-
-  // Grupo C (VAP/850 e Variações)
-  "VAP/850": "C",
-  "VAP/850 MA": "C",
+  "VAH/850": "A",
+  "VAL/850": "A",
+  "VAP/850": "A",
+  "VAP/850 MA": "A",
 
   // Grupo D (VCA2P/1040)
-  "VCA2P/1040": "D",
-
-  // Grupo E (VCAG Complexo)
+  "VCA2P/1040": "E",
   "VCAG (1,25) + VCA2P (2,50)/1040": "E",
   "VCAG/1040": "E",
   "VCAGR (1,25) + VCAG1P (1,25)/1040": "E",

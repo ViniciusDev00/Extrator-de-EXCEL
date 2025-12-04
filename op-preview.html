@@ -9,11 +9,10 @@
 </head>
 <body>
     <div class="page">
-        <!-- Cabeçalho profissional -->
         <div class="header-section">
             <div class="logo-container">
                 <div class="logo-nsf">
-                    <img src="logo.png" alt="Logo" class="logo-img">
+                    <img src="Logo_NSF_C.png" alt="Logo" class="logo-img">
                 </div>
                 <div>
                     <h2>NSF INDUSTRIAL</h2>
@@ -26,15 +25,13 @@
             </div>
         </div>
 
-        <!-- Título principal -->
         <div class="page-title">
             <h1>LISTAGEM DE PRODUÇÃO</h1>
             <div class="info-label" style="text-align: center; margin-top: 8px;">
-                Documento gerado em: <span id="dataGeracao">24/11/2025</span>
+                Documento gerado em: <span id="dataGeracao"></span>
             </div>
         </div>
 
-        <!-- Informações da OP -->
         <div class="op-info-grid">
             <div class="info-item">
                 <span class="info-label">Grupo de Produção</span>
@@ -54,27 +51,10 @@
             </div>
         </div>
 
-        <!-- Observações -->
-        <div class="observations-section">
-            <h4><i class="fas fa-info-circle"></i> OBSERVAÇÕES</h4>
-            <p id="observacoesTexto">Verificar estoque de materiais antes da produção. Priorizar pedidos com urgência.</p>
-        </div>
-
-        <!-- Tabela Principal Aprimorada -->
         <section class="production-section">
             <div class="section-header">
                 <h3><i class="fas fa-clipboard-list"></i> LISTA DE PRODUÇÃO</h3>
-                <div class="table-stats">
-                    <span class="stat-item">
-                        <i class="fas fa-boxes"></i>
-                        <span id="totalItems">0</span> itens
-                    </span>
-                    <span class="stat-item">
-                        <i class="fas fa-clock"></i>
-                        <span id="generationTime">Agora</span>
-                    </span>
                 </div>
-            </div>
             
             <div class="table-container">
                 <table class="production-table">
@@ -91,12 +71,10 @@
                         </tr>
                     </thead>
                     <tbody id="tableBody">
-                        <!-- Linhas serão preenchidas via JavaScript -->
-                    </tbody>
+                        </tbody>
                 </table>
             </div>
 
-            <!-- Totais da Tabela -->
             <div class="table-totals">
                 <div class="table-totals-grid">
                     <div class="total-label">
@@ -119,83 +97,7 @@
             </div>
         </section>
 
-        <!-- Resumo Executivo -->
-        <section class="executive-summary">
-            <div class="summary-header">
-                <h4><i class="fas fa-chart-pie"></i> RESUMO EXECUTIVO</h4>
-                <span class="summary-badge" id="priorityBadge">
-                    <i class="fas fa-flag"></i> PRIORIDADE NORMAL
-                </span>
-            </div>
-            
-            <div class="summary-grid">
-                <div class="summary-card total-units">
-                    <div class="summary-icon">
-                        <i class="fas fa-cubes"></i>
-                    </div>
-                    <div class="summary-content">
-                        <div class="summary-label">TOTAL UNIDADES</div>
-                        <div id="totalUnidades" class="summary-value">0</div>
-                        <div class="summary-subtext">Unidades totais para produção</div>
-                    </div>
-                    <div class="summary-trend">
-                        <i class="fas fa-chart-line"></i>
-                    </div>
-                </div>
-                
-                <div class="summary-card pvc-summary">
-                    <div class="summary-icon">
-                        <i class="fas fa-tint"></i>
-                    </div>
-                    <div class="summary-content">
-                        <div class="summary-label">TOTAL PVC</div>
-                        <div id="totalPvcResumo" class="summary-value">0</div>
-                        <div class="summary-subtext">
-                            <span id="pvcPercentage">0%</span> do total
-                        </div>
-                    </div>
-                    <div class="summary-progress">
-                        <div class="progress-bar">
-                            <div class="progress-fill" id="pvcProgress"></div>
-                        </div>
-                    </div>
-                </div>
-                
-                <div class="summary-card inox-summary">
-                    <div class="summary-icon">
-                        <i class="fas fa-industry"></i>
-                    </div>
-                    <div class="summary-content">
-                        <div class="summary-label">TOTAL INOX</div>
-                        <div id="totalInoxResumo" class="summary-value">0</div>
-                        <div class="summary-subtext">
-                            <span id="inoxPercentage">0%</span> do total
-                        </div>
-                    </div>
-                    <div class="summary-progress">
-                        <div class="progress-bar">
-                            <div class="progress-fill" id="inoxProgress"></div>
-                        </div>
-                    </div>
-                </div>
-                
-                <div class="summary-card efficiency">
-                    <div class="summary-icon">
-                        <i class="fas fa-bolt"></i>
-                    </div>
-                    <div class="summary-content">
-                        <div class="summary-label">EFICIÊNCIA</div>
-                        <div id="efficiencyScore" class="summary-value">0%</div>
-                        <div class="summary-subtext">Otimização de lotes</div>
-                    </div>
-                    <div class="summary-indicator">
-                        <div class="indicator-dot" id="efficiencyDot"></div>
-                    </div>
-                </div>
-            </div>
-        </section>
 
-        <!-- Assinaturas -->
         <div class="signatures-section">
             <div class="signatures-grid">
                 <div class="signature-box">
@@ -221,7 +123,6 @@
             </div>
         </div>
 
-        <!-- Botões de ação -->
         <div class="action-buttons no-print">
             <button onclick="window.print()" class="btn btn-print">
                 <i class="fas fa-print"></i> IMPRIMIR ORDEM
