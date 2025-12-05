@@ -23,8 +23,7 @@ function carregarDadosOP() {
     // Gerar tabela de produção
     gerarTabelaProducao(dadosGrupo);
 
-    // Atualizar resumo executivo
-    atualizarResumoExecutivo(dadosGrupo);
+    // [Removida a chamada a atualizarResumoExecutivo para corrigir o erro 'null']
 }
 
 function atualizarCabecalho(grupo, dados) {
@@ -34,7 +33,6 @@ function atualizarCabecalho(grupo, dados) {
     
     // Calcular totais básicos
     const totalItens = dados.length;
-    const totalQuantidade = dados.reduce((sum, item) => sum + (parseInt(item["QUANTIDADE TOTAL"]) || 0), 0);
     
     // Atualizar elementos
     document.getElementById("grupoTexto").textContent = `GRUPO ${grupo} - ${nomeGrupo}`;
@@ -95,7 +93,7 @@ function gerarTabelaProducao(dados) {
             <td class="col-item">${index + 1}</td>
             <td class="col-pedido">
                 <div style="font-weight: 600; color: var(--neutral-800);">${nomeParaExibir}</div>
-                <div style="font-size: 0.75rem; color: var(--neutral-500); margin-top: 1px;">
+                <div style="font-size: 0.75rem; color: var(--neutral-500); margin-top: 1px; display: none;">
                     Material: ${item.BOJO || 'N/A'}
                 </div>
             </td>
@@ -128,78 +126,6 @@ function gerarTabelaProducao(dados) {
     document.getElementById("totalQtd").textContent = totalQtd.toLocaleString();
     document.getElementById("totalPvc").textContent = totalPvc.toLocaleString();
     document.getElementById("totalInox").textContent = totalInox.toLocaleString();
-
-    // REMOVIDO: Linhas que atualizavam os elementos de estatísticas da tabela (totalItems e generationTime)
-}
-
-function atualizarResumoExecutivo(dados) {
-    const totalUnidades = dados.reduce((sum, item) => sum + (parseInt(item["QUANTIDADE TOTAL"]) || 0), 0);
-    const totalPVC = dados.reduce((sum, item) => {
-        const material = (item.BOJO || "").toUpperCase();
-        const isPVC = material.includes("PVC") || material.includes("PP");
-        return sum + (isPVC ? (parseInt(item["QUANTIDADE TOTAL"]) || 0) : 0);
-    }, 0);
-    const totalINOX = totalUnidades - totalPVC;
-    
-    // Atualizar valores principais
-    document.getElementById("totalUnidades").textContent = totalUnidades.toLocaleString();
-    document.getElementById("totalPvcResumo").textContent = totalPVC.toLocaleString();
-    document.getElementById("totalInoxResumo").textContent = totalINOX.toLocaleString();
-    
-    // Calcular porcentagens
-    const pvcPercentage = totalUnidades > 0 ? Math.round((totalPVC / totalUnidades) * 100) : 0;
-    const inoxPercentage = totalUnidades > 0 ? Math.round((totalINOX / totalUnidades) * 100) : 0;
-    
-    document.getElementById("pvcPercentage").textContent = `${pvcPercentage}%`;
-    document.getElementById("inoxPercentage").textContent = `${inoxPercentage}%`;
-    
-    // Atualizar barras de progresso
-    document.getElementById("pvcProgress").style.width = `${pvcPercentage}%`;
-    document.getElementById("inoxProgress").style.width = `${inoxPercentage}%`;
-    
-    // Calcular eficiência (baseado na distribuição balanceada)
-    let efficiency;
-    if (totalUnidades === 0) {
-        efficiency = 100;
-    } else {
-        // Eficiência máxima quando há balanceamento entre PVC e INOX
-        const balanceScore = 100 - Math.abs(pvcPercentage - 50);
-        const volumeScore = Math.min(100, (totalUnidades / 50) * 100); // 50 unidades = 100%
-        efficiency = Math.round((balanceScore * 0.6) + (volumeScore * 0.4));
-    }
-    
-    document.getElementById("efficiencyScore").textContent = `${efficiency}%`;
-    
-    // Atualizar indicador de eficiência
-    const efficiencyDot = document.getElementById("efficiencyDot");
-    if (efficiency >= 80) {
-        efficiencyDot.className = "indicator-dot high";
-    } else if (efficiency >= 60) {
-        efficiencyDot.className = "indicator-dot";
-    } else {
-        efficiencyDot.className = "indicator-dot low";
-    }
-    
-    // Atualizar badge de prioridade
-    const priorityBadge = document.getElementById("priorityBadge");
-    if (totalUnidades > 100) {
-        priorityBadge.innerHTML = '<i class="fas fa-flag"></i> ALTA PRIORIDADE';
-        priorityBadge.style.background = 'linear-gradient(135deg, #fef3c7 0%, #fde68a 100%)';
-        priorityBadge.style.borderColor = '#f59e0b';
-        priorityBadge.style.color = '#92400e';
-    } else if (totalUnidades > 50) {
-        priorityBadge.innerHTML = '<i class="fas fa-flag"></i> MÉDIA PRIORIDADE';
-        priorityBadge.style.background = 'linear-gradient(135deg, #dbeafe 0%, #93c5fd 100%)';
-        priorityBadge.style.borderColor = '#3b82f6';
-        priorityBadge.style.color = '#1e40af';
-    } else {
-        priorityBadge.innerHTML = '<i class="fas fa-flag"></i> PRIORIDADE NORMAL';
-        priorityBadge.style.background = '';
-        priorityBadge.style.borderColor = '';
-        priorityBadge.style.color = '';
-    }
-    
-    // REMOVIDA LÓGICA DE ATUALIZAÇÃO DE OBSERVAÇÕES
 }
 
 function atualizarDataGeracao() {
@@ -217,13 +143,7 @@ function fecharVisualizacao() {
     }
 }
 
-function exportarPDF() {
-    // Temporariamente exibe uma mensagem enquanto implementa o PDF
-    alert("Função de exportação PDF será implementada em breve.\nEnquanto isso, use a função de impressão do navegador.");
-    
-    // Alternativa: abrir diálogo de impressão
-    // window.print();
-}
+// [Removida a função exportarPDF]
 
 function produzirItem(index) {
     // Simulação de início de produção
@@ -317,7 +237,7 @@ document.head.appendChild(style);
 // Funções auxiliares (mantidas do original)
 function obterNomeGrupo(grupo) {
     const nomes = {
-        A: "VERTICAL ALTOS",
+        A: "VERTICAL ALTO",
         B: "AÇOUGUE CURVO",
         C: "ESPECIAIS",
         D: "ESPECIAIS 90",
@@ -326,7 +246,7 @@ function obterNomeGrupo(grupo) {
         G: "AÇOUGUE RETO",
         H: "ESPECIAS 180",
         I: "ESPECIAIS 3P",
-        J: "ILHAS CONGELADAS",
+        J: "ILHAS CONGELADA",
         K: "PADARIA CURVA",
         L: "ACOPLADO",
     };
@@ -335,26 +255,28 @@ function obterNomeGrupo(grupo) {
 
 function obterCategoriaGrupo(grupo) {
     const categorias = {
-        A: "EXPOSITORES - REFRIGERAÇÃO",
-        B: "EXPOSITORES - REFRIGERAÇÃO",
-        C: "EXPOSITORES - REFRIGERAÇÃO",
-        D: "EXPOSITORES - AÇOUGUE",
-        E: "EXPOSITORES - AÇOUGUE",
-        F: "ILHAS - CONGELADOS",
-        G: "ILHAS - CONGELADOS",
-        H: "ILHAS - CONGELADOS",
-        I: "REFRIGERAÇÃO",
-        J: "REFRIGERAÇÃO ALTA",
-        K: "ILHAS - PONTA",
-        L: "ILHAS - 3P",
-        M: "INTELIGENTE",
-        N: "AÇOUGUE",
-        O: "INTELIGENTE",
+        A: "VERTICAL ALTO",
+        B: "AÇOUGUE CURVO",
+        C: "ESPECIAIS",
+        D: "ESPECIAIS 90",
+        E: "ESPECIAIS COM PORTA",
+        F: "PADARIA ESS",
+        G: "AÇOUGUE RETO",
+        H: "ESPECIAS 180",
+        I: "ESPECIAIS 3P",
+        J: "ILHAS CONGELADA",
+        K: "PADARIA CURVA",
+        L: "ACOPLADO",
     };
     return categorias[grupo] || "EXPOSITORES";
 }
 
 function obterSemanaAtual() {
+    // NOVO: Lê a semana da planilha salva no localStorage pelo script.js
+    const semanaLida = localStorage.getItem("semanaOP");
+    if (semanaLida) return semanaLida;
+    
+    // Fallback: Calcula a semana atual (como antes)
     const hoje = new Date();
     const inicioAno = new Date(hoje.getFullYear(), 0, 1);
     const dias = Math.floor((hoje - inicioAno) / (24 * 60 * 60 * 1000));

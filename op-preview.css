@@ -194,11 +194,15 @@ button {
 
     .col-acao { display: table-cell !important; width: 14% !important; }
     .col-item { width: 5% !important; }
-    .col-pedido { width: 23% !important; }
+    .col-pedido { width: 28% !important; } /* Alterado: Aumenta a largura */
     .col-qtd { width: 8% !important; }
     .col-pvc { width: 8% !important; }
     .col-inox { width: 8% !important; }
     .col-estoque { width: 12% !important; }
+    /* NOVO: Esconde a descrição do material na impressão */
+    .production-table .col-pedido div:nth-child(2) {
+        display: none !important;
+    }
 
     /* Botões Pequenos */
     .estoque-badge {
@@ -258,7 +262,7 @@ button {
     .signatures-section {
         margin-top: 50px !important; /* Espaço BEM MAIOR (Correção 2) */
         padding: 10px 0 !important;
-        border-top: 1px dashed #bbb !important;
+        border-top: none !important; /* Alterado: Remove a linha tracejada */
         page-break-inside: avoid !important;
     }
 
@@ -416,3 +420,4 @@ button {
     .op-info-grid { grid-template-columns: repeat(2, 1fr); }
     .table-totals-grid { flex-wrap: wrap; justify-content: center; }
 }
+

@@ -49,7 +49,7 @@ const CONFIG_PDF = {
     PADDING_CELULA: 2,
     COLUNAS: [
       { nome: "Nº", largura: 10 },
-      { nome: "PEDIDO: CLIENTE", largura: 60 },
+      { nome: "PEDIDO / CLIENTE", largura: 60 },
       { nome: "QTD PRODUÇÃO", largura: 25 },
       { nome: "PVC", largura: 15 },
       { nome: "INOX", largura: 15 },
@@ -61,7 +61,7 @@ const CONFIG_PDF = {
 };
 
 // ====================================================================================
-// MAPA COMPLETO DE AGRUPAMENTO DE MODELOS (MESMO DO ANTERIOR)
+// MAPA COMPLETO DE AGRUPAMENTO DE MODELOS
 // ====================================================================================
 
 const MAPA_MODELO_GRUPO = {
@@ -90,59 +90,59 @@ const MAPA_MODELO_GRUPO = {
   "VAP/850": "A",
   "VAP/850 MA": "A",
 
-  // Grupo D (VCA2P/1040)
-  "VCA2P/1040": "E",
-  "VCAG (1,25) + VCA2P (2,50)/1040": "E",
-  "VCAG/1040": "E",
-  "VCAGR (1,25) + VCAG1P (1,25)/1040": "E",
+  // Grupo B (VCA2P/1040)
+  "VCA2P/1040": "B",
+  "VCAG (1,25) + VCA2P (2,50)/1040": "B",
+  "VCAG/1040": "B",
+  "VCAGR (1,25) + VCAG1P (1,25)/1040": "B",
 
-  // Grupo F (VIL-2P/900)
-  "VIL-2P/900": "F",
-  "VIL-2P CENTRAL/1760": "F",
-  "VIL-2P FRONTAL/900": "F",
+  // Grupo C (VIL-2P/900)
+  "VIL-2P/900": "C",
+  "VIL-2P CENTRAL/1760": "C",
+  "VIL-2P FRONTAL/900": "C",
 
-  // Grupo G (VIL-2P/900 CANTO)
-  "VIL-2P/900 CANTO": "G",
+  // Grupo D (VIL-2P/900 CANTO)
+  "VIL-2P/900 CANTO": "D",
 
-  // Grupo H (VILP-2P/900 e Variações)
-  "VILP-2P/900": "H",
-  "VILP-2P/900 MA": "H",
+  // Grupo E (VILP-2P/900 e Variações)
+  "VILP-2P/900": "E",
+  "VILP-2P/900 MA": "E",
 
-  // Grupo I (VR-900 e Variações)
-  "VR1P/900": "I",
-  "VR2P/900": "I",
-  "VR2P/900 MA": "I",
-  "VR2PA/900": "I",
-  "VRQU/900": "I",
-  "VRQR/900": "I",
-  "VRHB/900": "I",
+  // Grupo F (VR-900 e Variações)
+  "VR1P/900": "F",
+  "VR2P/900": "F",
+  "VR2P/900 MA": "F",
+  "VR2PA/900": "F",
+  "VRQU/900": "F",
+  "VRQR/900": "F",
+  "VRHB/900": "F",
+
+  // Grupo G
+  "VRA1P/1040": "G",
+  "VRA2P/1040": "G",
+  "VRAG (1,25) + VRA2P (2,50)/1040": "G",
+  "VRAG/1040": "G",
+  "VRAGR/1040": "G",
+  "VRAG(3,75) + VRAG1P (1,25)/1040": "G",
+  "VRAG2N/900": "G",
+  "VRAG (2,50) +VRA1P (1,25)/1040": "G",
+
+  // Grupo H
+  "VIL-2P PONTA CT 180/900": "H",
+
+  // Grupo I
+  "VIL-3P/900": "I",
 
   // Grupo J
-  "VRA1P/1040": "J",
-  "VRA2P/1040": "J",
-  "VRAG (1,25) + VRA2P (2,50)/1040": "J",
-  "VRAG/1040": "J",
-  "VRAGR/1040": "J",
-  "VRAG(3,75) + VRAG1P (1,25)/1040": "J",
-  "VRAG2N/900": "J",
-  "VRAG (2,50) +VRA1P (1,25)/1040": "J",
+  ICDT: "J",
+  ICFT: "J",
 
   // Grupo K
-  "VIL-2P PONTA CT 180/900": "K",
+  "VC2P/900": "K",
+  "VCQU/900": "K",
 
   // Grupo L
-  "VIL-3P/900": "L",
-
-  // Grupo M
-  ICDT: "M",
-  ICFT: "M",
-
-  // Grupo N
-  "VC2P/900": "N",
-  "VCQU/900": "N",
-
-  // Grupo O
-  IRAS: "O",
+  IRAS: "L",
 };
 
 // ====================================================================================
@@ -175,6 +175,7 @@ let lotesGerais = [];
 let lotesDetalhes = [];
 const todasCategorias = new Set();
 const todosGrupos = new Set();
+let semanaDaPlanilha = ""; // NOVO: Variável para armazenar a semana lida
 
 // ====================================================================================
 // INICIALIZAÇÃO DO SISTEMA
@@ -184,10 +185,15 @@ document.addEventListener("DOMContentLoaded", () => {
   const fileInput = document.getElementById("excelFileInput");
   const processButton = document.getElementById("processButton");
   
-  fileInput.addEventListener("change", () => {
-    processButton.disabled = fileInput.files.length === 0;
-    document.getElementById("processButtonText").textContent = "Processar Planilha";
-  });
+  if (fileInput) {
+    fileInput.addEventListener("change", () => {
+        if (processButton) {
+            processButton.disabled = fileInput.files.length === 0;
+            const btnText = document.getElementById("processButtonText");
+            if(btnText) btnText.textContent = "Processar Planilha";
+        }
+    });
+  }
 });
 
 // ====================================================================================
@@ -220,12 +226,12 @@ function getCategoriaGrupo(grupo) {
 }
 
 function getSemanaAtualFormatada() {
+  if (semanaDaPlanilha) return semanaDaPlanilha; // NOVO: Retorna a semana lida se disponível
+    
   const hoje = new Date();
   const inicioAno = new Date(hoje.getFullYear(), 0, 1);
   const dias = Math.floor((hoje - inicioAno) / (24 * 60 * 60 * 1000));
   const semana = Math.ceil((dias + 1) / 7);
-  
-  // Retorna no formato "SEMANA XX"
   return `SEMANA ${String(semana).padStart(2, "0")}`;
 }
 
@@ -239,15 +245,10 @@ function getDataAtualFormatada() {
 
 function formatarDimensaoParaPDF(dimensao) {
   if (!dimensao || dimensao === "N/A" || dimensao === "") return "N/A";
-  
-  // Remove espaços e pontos
   let dim = dimensao.toString().replace(/\s/g, "").replace(".", ",");
-  
-  // Garante que tenha formato decimal
   if (!dim.includes(",")) {
     dim = dim + ",000";
   }
-  
   return dim;
 }
 
@@ -264,17 +265,15 @@ function verificarNovaPagina(doc, yAtual, alturaNecessaria) {
 }
 
 // ====================================================================================
-// FUNÇÃO PRINCIPAL PARA GERAR PDF IDÊNTICO AO MODELO
+// FUNÇÃO PRINCIPAL PARA GERAR PDF (MANTIDA PARA COMPATIBILIDADE)
 // ====================================================================================
-
+// Esta função não será chamada diretamente, o op-preview.js terá sua própria para garantir que use dados do localStorage.
 function gerarOrdemProducaoPDF(grupo) {
-  // Verificar se a biblioteca jsPDF está carregada
   if (typeof window.jspdf === 'undefined') {
     alert("Erro: Biblioteca jsPDF não carregada. Aguarde o carregamento da página.");
     return;
   }
   
-  // Filtrar dados do grupo selecionado
   const dadosGrupo = lotesDetalhes.filter((lote) => lote.GRUPO === grupo);
   
   if (dadosGrupo.length === 0) {
@@ -282,21 +281,13 @@ function gerarOrdemProducaoPDF(grupo) {
     return;
   }
   
-  // Ordenar dados
   dadosGrupo.sort((a, b) => {
-    if (a.BOJO !== b.BOJO) {
-      return a.BOJO.localeCompare(b.BOJO);
-    }
-    if (a.LINHA !== b.LINHA) {
-      return a.LINHA.localeCompare(b.LINHA);
-    }
-    if (a.DIMENSÃO !== b.DIMENSÃO) {
-      return a.DIMENSÃO.localeCompare(b.DIMENSÃO);
-    }
+    if (a.BOJO !== b.BOJO) return a.BOJO.localeCompare(b.BOJO);
+    if (a.LINHA !== b.LINHA) return a.LINHA.localeCompare(b.LINHA);
+    if (a.DIMENSÃO !== b.DIMENSÃO) return a.DIMENSÃO.localeCompare(b.DIMENSÃO);
     return 0;
   });
   
-  // Criar PDF
   const { jsPDF } = window.jspdf;
   const doc = new jsPDF({
     orientation: CONFIG_PDF.PAGINA.ORIENTACAO,
@@ -304,16 +295,11 @@ function gerarOrdemProducaoPDF(grupo) {
     format: CONFIG_PDF.PAGINA.FORMATO,
   });
   
-  // =============================================
-  // CABEÇALHO - TÍTULO PRINCIPAL
-  // =============================================
+  // Cabeçalho
   doc.setFontSize(CONFIG_PDF.FONTES.TITULO.tamanho);
   doc.setFont("helvetica", CONFIG_PDF.FONTES.TITULO.estilo);
   doc.text("LISTAGEM DE PRODUÇÃO", CONFIG_PDF.PAGINA.LARGURA_UTIL / 2, 20, { align: "center" });
   
-  // =============================================
-  // SUBTÍTULO - CATEGORIA E SEMANA
-  // =============================================
   const categoria = getCategoriaGrupo(grupo);
   const semana = getSemanaAtualFormatada();
   const subtitulo = `${categoria} (${semana})`;
@@ -322,65 +308,45 @@ function gerarOrdemProducaoPDF(grupo) {
   doc.setFont("helvetica", CONFIG_PDF.FONTES.SUBTITULO.estilo);
   doc.text(subtitulo, CONFIG_PDF.PAGINA.MARGEM_ESQUERDA, 35);
   
-  // =============================================
-  // DATA À DIREITA
-  // =============================================
   const dataAtualTexto = getDataAtualFormatada();
   doc.setFontSize(CONFIG_PDF.FONTES.DATA.tamanho);
   doc.setFont("helvetica", "normal");
   doc.text(`DATA: ${dataAtualTexto}`, CONFIG_PDF.PAGINA.LARGURA_UTIL - 30, 35);
   
-  // =============================================
-  // FILTRO DO GRUPO (Caixa com borda)
-  // =============================================
   const nomeGrupoDisplay = getNomeCompletoGrupo(grupo);
   const filtroX = CONFIG_PDF.PAGINA.MARGEM_ESQUERDA;
   const filtroY = 45;
   const filtroLargura = 50;
   const filtroAltura = 8;
   
-  // Caixa do filtro
   doc.setDrawColor(...CONFIG_PDF.CORES.PRETO);
   doc.setFillColor(...CONFIG_PDF.CORES.BRANCO);
   doc.rect(filtroX, filtroY, filtroLargura, filtroAltura, "FD");
-  
-  // Texto do filtro
   doc.setFontSize(CONFIG_PDF.FONTES.FILTRO.tamanho);
   doc.setFont("helvetica", CONFIG_PDF.FONTES.FILTRO.estilo);
   doc.text(nomeGrupoDisplay, filtroX + 5, filtroY + 5);
   
-  // =============================================
-  // TABELA PRINCIPAL - CABEÇALHO
-  // =============================================
+  // Tabela
   const tabelaX = CONFIG_PDF.PAGINA.MARGEM_ESQUERDA;
   const tabelaY = 60;
-  
-  // Desenhar cabeçalho da tabela
   let xAtual = tabelaX;
+  
   CONFIG_PDF.TABELA.COLUNAS.forEach((coluna) => {
-    // Retângulo do cabeçalho
     doc.setDrawColor(...CONFIG_PDF.CORES.PRETO);
     doc.setFillColor(...CONFIG_PDF.CORES.CINZA_TABELA);
     doc.rect(xAtual, tabelaY, coluna.largura, CONFIG_PDF.TABELA.ALTURA_CABECALHO, "FD");
-    
-    // Texto do cabeçalho
     doc.setFontSize(CONFIG_PDF.FONTES.CABECALHO_TABELA.tamanho);
     doc.setFont("helvetica", CONFIG_PDF.FONTES.CABECALHO_TABELA.estilo);
     doc.text(coluna.nome, xAtual + coluna.largura / 2, tabelaY + 5, { align: "center" });
-    
     xAtual += coluna.largura;
   });
   
-  // =============================================
-  // DADOS DA TABELA
-  // =============================================
   let yAtual = tabelaY + CONFIG_PDF.TABELA.ALTURA_CABECALHO;
   let totalQuantidade = 0;
   let totalPVC = 0;
   let totalINOX = 0;
   
-  dadosGrupo.forEach((item, index) => {
-    // Verificar se precisa de nova página
+  dadosGrupo.forEach((item) => {
     yAtual = verificarNovaPagina(doc, yAtual, CONFIG_PDF.TABELA.ALTURA_LINHA);
     
     const dimensaoFormatada = formatarDimensaoParaPDF(item.DIMENSÃO);
@@ -395,10 +361,9 @@ function gerarOrdemProducaoPDF(grupo) {
     totalPVC += qtdPVC;
     totalINOX += qtdINOX;
     
-    // Desenhar linha da tabela
     xAtual = tabelaX;
     
-    // Coluna 1: Nº (com "X")
+    // 1. Nº
     doc.setDrawColor(...CONFIG_PDF.CORES.PRETO);
     doc.setFillColor(...CONFIG_PDF.CORES.BRANCO);
     doc.rect(xAtual, yAtual, CONFIG_PDF.TABELA.COLUNAS[0].largura, CONFIG_PDF.TABELA.ALTURA_LINHA, "FD");
@@ -407,19 +372,17 @@ function gerarOrdemProducaoPDF(grupo) {
     doc.text("X", xAtual + CONFIG_PDF.TABELA.COLUNAS[0].largura / 2, yAtual + 4.5, { align: "center" });
     xAtual += CONFIG_PDF.TABELA.COLUNAS[0].largura;
     
-    // Coluna 2: PEDIDO: CLIENTE
+    // 2. PEDIDO
     doc.setDrawColor(...CONFIG_PDF.CORES.PRETO);
     doc.setFillColor(...CONFIG_PDF.CORES.BRANCO);
     doc.rect(xAtual, yAtual, CONFIG_PDF.TABELA.COLUNAS[1].largura, CONFIG_PDF.TABELA.ALTURA_LINHA, "FD");
     doc.setFontSize(CONFIG_PDF.FONTES.DADOS_TABELA.tamanho);
     doc.setFont("helvetica", "normal");
-    
-    // Quebrar texto se necessário
     const textoPedido = pedidoCliente.length > 30 ? pedidoCliente.substring(0, 30) + "..." : pedidoCliente;
     doc.text(textoPedido, xAtual + 2, yAtual + 4.5);
     xAtual += CONFIG_PDF.TABELA.COLUNAS[1].largura;
     
-    // Coluna 3: QTD PRODUÇÃO
+    // 3. QTD
     doc.setDrawColor(...CONFIG_PDF.CORES.PRETO);
     doc.setFillColor(...CONFIG_PDF.CORES.CINZA_TABELA);
     doc.rect(xAtual, yAtual, CONFIG_PDF.TABELA.COLUNAS[2].largura, CONFIG_PDF.TABELA.ALTURA_LINHA, "FD");
@@ -428,7 +391,7 @@ function gerarOrdemProducaoPDF(grupo) {
     doc.text(quantidade.toString(), xAtual + CONFIG_PDF.TABELA.COLUNAS[2].largura / 2, yAtual + 4.5, { align: "center" });
     xAtual += CONFIG_PDF.TABELA.COLUNAS[2].largura;
     
-    // Coluna 4: PVC
+    // 4. PVC
     doc.setDrawColor(...CONFIG_PDF.CORES.PRETO);
     doc.setFillColor(...CONFIG_PDF.CORES.CINZA_TABELA);
     doc.rect(xAtual, yAtual, CONFIG_PDF.TABELA.COLUNAS[3].largura, CONFIG_PDF.TABELA.ALTURA_LINHA, "FD");
@@ -437,7 +400,7 @@ function gerarOrdemProducaoPDF(grupo) {
     doc.text(qtdPVC.toString(), xAtual + CONFIG_PDF.TABELA.COLUNAS[3].largura / 2, yAtual + 4.5, { align: "center" });
     xAtual += CONFIG_PDF.TABELA.COLUNAS[3].largura;
     
-    // Coluna 5: INOX
+    // 5. INOX
     doc.setDrawColor(...CONFIG_PDF.CORES.PRETO);
     doc.setFillColor(...CONFIG_PDF.CORES.CINZA_TABELA);
     doc.rect(xAtual, yAtual, CONFIG_PDF.TABELA.COLUNAS[4].largura, CONFIG_PDF.TABELA.ALTURA_LINHA, "FD");
@@ -446,9 +409,9 @@ function gerarOrdemProducaoPDF(grupo) {
     doc.text(qtdINOX.toString(), xAtual + CONFIG_PDF.TABELA.COLUNAS[4].largura / 2, yAtual + 4.5, { align: "center" });
     xAtual += CONFIG_PDF.TABELA.COLUNAS[4].largura;
     
-    // Coluna 6: ESTOQUE PP (botão FABRICAR)
+    // 6. EST. PP
     doc.setDrawColor(...CONFIG_PDF.CORES.PRETO);
-    doc.setFillColor(qtdPVC > 0 ? [52, 152, 219] : [200, 200, 200]); // Azul se tiver PVC, cinza se não
+    doc.setFillColor(qtdPVC > 0 ? [52, 152, 219] : [200, 200, 200]);
     doc.rect(xAtual, yAtual, CONFIG_PDF.TABELA.COLUNAS[5].largura, CONFIG_PDF.TABELA.ALTURA_LINHA, "FD");
     doc.setFontSize(CONFIG_PDF.FONTES.DADOS_TABELA.tamanho);
     doc.setFont("helvetica", "bold");
@@ -457,9 +420,9 @@ function gerarOrdemProducaoPDF(grupo) {
     doc.setTextColor(...CONFIG_PDF.CORES.PRETO);
     xAtual += CONFIG_PDF.TABELA.COLUNAS[5].largura;
     
-    // Coluna 7: ESTOQUE INOX (botão FABRICAR)
+    // 7. EST. INOX
     doc.setDrawColor(...CONFIG_PDF.CORES.PRETO);
-    doc.setFillColor(qtdINOX > 0 ? [52, 152, 219] : [200, 200, 200]); // Azul se tiver INOX, cinza se não
+    doc.setFillColor(qtdINOX > 0 ? [52, 152, 219] : [200, 200, 200]);
     doc.rect(xAtual, yAtual, CONFIG_PDF.TABELA.COLUNAS[6].largura, CONFIG_PDF.TABELA.ALTURA_LINHA, "FD");
     doc.setFontSize(CONFIG_PDF.FONTES.DADOS_TABELA.tamanho);
     doc.setFont("helvetica", "bold");
@@ -468,9 +431,9 @@ function gerarOrdemProducaoPDF(grupo) {
     doc.setTextColor(...CONFIG_PDF.CORES.PRETO);
     xAtual += CONFIG_PDF.TABELA.COLUNAS[6].largura;
     
-    // Coluna 8: PRODUZIR (botão FABRICAR)
+    // 8. PRODUZIR
     doc.setDrawColor(...CONFIG_PDF.CORES.PRETO);
-    doc.setFillColor([52, 152, 219]); // Azul sempre
+    doc.setFillColor([52, 152, 219]);
     doc.rect(xAtual, yAtual, CONFIG_PDF.TABELA.COLUNAS[7].largura, CONFIG_PDF.TABELA.ALTURA_LINHA, "FD");
     doc.setFontSize(CONFIG_PDF.FONTES.DADOS_TABELA.tamanho);
     doc.setFont("helvetica", "bold");
@@ -481,24 +444,15 @@ function gerarOrdemProducaoPDF(grupo) {
     yAtual += CONFIG_PDF.TABELA.ALTURA_LINHA;
   });
   
-  // =============================================
-  // LINHA DE TOTAIS
-  // =============================================
+  // Totais
   yAtual += 5;
-  
-  // Fundo para totais
   doc.setDrawColor(...CONFIG_PDF.CORES.PRETO);
   doc.setFillColor(...CONFIG_PDF.CORES.BRANCO);
-  doc.rect(tabelaX, yAtual, 
-    CONFIG_PDF.TABELA.COLUNAS[0].largura + CONFIG_PDF.TABELA.COLUNAS[1].largura, 
-    CONFIG_PDF.TABELA.ALTURA_LINHA, "FD");
-  
-  // Texto "TOTAIS"
+  doc.rect(tabelaX, yAtual, CONFIG_PDF.TABELA.COLUNAS[0].largura + CONFIG_PDF.TABELA.COLUNAS[1].largura, CONFIG_PDF.TABELA.ALTURA_LINHA, "FD");
   doc.setFontSize(CONFIG_PDF.FONTES.DADOS_TABELA.tamanho);
   doc.setFont("helvetica", "bold");
   doc.text("TOTAIS", tabelaX + 5, yAtual + 4.5);
   
-  // Total QTD PRODUÇÃO
   let xTotal = tabelaX + CONFIG_PDF.TABELA.COLUNAS[0].largura + CONFIG_PDF.TABELA.COLUNAS[1].largura;
   doc.setDrawColor(...CONFIG_PDF.CORES.PRETO);
   doc.setFillColor(...CONFIG_PDF.CORES.CINZA_TABELA);
@@ -506,31 +460,23 @@ function gerarOrdemProducaoPDF(grupo) {
   doc.text(totalQuantidade.toString(), xTotal + CONFIG_PDF.TABELA.COLUNAS[2].largura / 2, yAtual + 4.5, { align: "center" });
   xTotal += CONFIG_PDF.TABELA.COLUNAS[2].largura;
   
-  // Total PVC
   doc.setDrawColor(...CONFIG_PDF.CORES.PRETO);
   doc.setFillColor(...CONFIG_PDF.CORES.CINZA_TABELA);
   doc.rect(xTotal, yAtual, CONFIG_PDF.TABELA.COLUNAS[3].largura, CONFIG_PDF.TABELA.ALTURA_LINHA, "FD");
   doc.text(totalPVC.toString(), xTotal + CONFIG_PDF.TABELA.COLUNAS[3].largura / 2, yAtual + 4.5, { align: "center" });
   xTotal += CONFIG_PDF.TABELA.COLUNAS[3].largura;
   
-  // Total INOX
   doc.setDrawColor(...CONFIG_PDF.CORES.PRETO);
   doc.setFillColor(...CONFIG_PDF.CORES.CINZA_TABELA);
   doc.rect(xTotal, yAtual, CONFIG_PDF.TABELA.COLUNAS[4].largura, CONFIG_PDF.TABELA.ALTURA_LINHA, "FD");
   doc.text(totalINOX.toString(), xTotal + CONFIG_PDF.TABELA.COLUNAS[4].largura / 2, yAtual + 4.5, { align: "center" });
   
-  // =============================================
-  // ÁREA DE ASSINATURAS
-  // =============================================
+  // Assinaturas
   yAtual += 15;
-  
-  // Linha horizontal
   doc.setDrawColor(...CONFIG_PDF.CORES.PRETO);
   doc.line(tabelaX, yAtual, tabelaX + 180, yAtual);
-  
   yAtual += 10;
   
-  // Assinaturas
   const assinaturas = [
     { cargo: "PCP", x: tabelaX + 20 },
     { cargo: "SUPERVISOR DE PRODUÇÃO", x: tabelaX + 70 },
@@ -539,26 +485,20 @@ function gerarOrdemProducaoPDF(grupo) {
   ];
   
   assinaturas.forEach((assinatura) => {
-    // Linha para assinatura
     doc.setDrawColor(...CONFIG_PDF.CORES.PRETO);
     doc.line(assinatura.x, yAtual, assinatura.x + 40, yAtual);
-    
-    // Cargo abaixo da linha
     doc.setFontSize(CONFIG_PDF.FONTES.ASSINATURA.tamanho);
     doc.setFont("helvetica", "normal");
     doc.text(assinatura.cargo, assinatura.x + 20, yAtual + 5, { align: "center" });
   });
   
-  // =============================================
-  // SALVAR PDF
-  // =============================================
   const dataAtualParaNome = new Date().toLocaleDateString("pt-BR").replace(/\//g, "-");
   const nomeArquivo = `OP_${grupo}_${nomeGrupoDisplay.replace(/\s/g, "_")}_${dataAtualParaNome}.pdf`;
   doc.save(nomeArquivo);
 }
 
 // ====================================================================================
-// FUNÇÕES AUXILIARES RESTANTES
+// FUNÇÕES DE LIMPEZA E NORMALIZAÇÃO
 // ====================================================================================
 
 function limparPrefixoModelo(modeloOriginal) {
@@ -580,25 +520,33 @@ function limparCategoria(nomeOriginal) {
   return nome;
 }
 
-function normalizarDimensao(dimensao) {
-  if (!dimensao || dimensao === "N/A") return "N/A";
-  return dimensao.toString().replace(/\s/g, "").replace(",", ".");
+/**
+ * Função Inteligente de Normalização de Dimensão.
+ */
+function normalizarDimensao(valor) {
+    if (!valor || valor === 'N/A') return 'N/A';
+    let s = String(valor).trim().toUpperCase();
+    s = s.replace(',', '.');
+    const numero = parseFloat(s);
+    if (!isNaN(numero)) {
+        return String(numero); 
+    }
+    return s;
 }
 
 function gerarBotoesFiltro() {
   const containerXLSX = document.getElementById("filterColXLSX");
   const containerPDF = document.getElementById("filterColPDF");
 
-  containerXLSX.innerHTML = "<h4>Download XLSX</h4>";
-  containerPDF.innerHTML = "<h4>Download PDF</h4>";
+  if (containerXLSX) containerXLSX.innerHTML = "<h4>Download XLSX</h4>";
+  if (containerPDF) containerPDF.innerHTML = "<h4>Download PDF</h4>";
 
   Array.from(todasCategorias)
     .sort()
     .forEach((categoria) => {
       if (!categoria || categoria === "N/A") return;
-
-      containerXLSX.innerHTML += `<button onclick="exportarRelatorio('detalhe', 'xlsx', '${categoria}')" class="btn">${categoria}</button>`;
-      containerPDF.innerHTML += `<button onclick="exportarRelatorio('detalhe', 'pdf', '${categoria}')" class="btn">${categoria}</button>`;
+      if (containerXLSX) containerXLSX.innerHTML += `<button onclick="exportarRelatorio('detalhe', 'xlsx', '${categoria}')" class="btn">${categoria}</button>`;
+      if (containerPDF) containerPDF.innerHTML += `<button onclick="exportarRelatorio('detalhe', 'pdf', '${categoria}')" class="btn">${categoria}</button>`;
     });
 }
 
@@ -619,20 +567,16 @@ function visualizarOrdemProducao(grupo) {
   localStorage.setItem('opGrupoDados', JSON.stringify(dadosGrupo));
   localStorage.setItem('opGrupoSelecionado', grupo);
   localStorage.setItem('lotesDetalhes', JSON.stringify(lotesDetalhes));
+  localStorage.setItem('semanaOP', semanaDaPlanilha); // NOVO: Salva a semana lida
   
   // Redirecionar para a página de pré-visualização
   window.location.href = 'op-preview.html';
 }
 
-// ====================================================================================
-// ATUALIZAR FUNÇÃO gerarBotoesOP()
-// ====================================================================================
-
 function gerarBotoesOP() {
-  // MUDANÇA IMPORTANTE: O container agora é "filterColOP" (sem "PDF" no final)
   const containerOP = document.getElementById("filterColOP");
+  if (!containerOP) return;
 
-  // MUDANÇA NO HTML: Texto atualizado e estilo diferente
   containerOP.innerHTML = "<h4 style='color: #007bff;'>Pré-visualizar Ordem de Produção</h4>";
 
   Array.from(todosGrupos)
@@ -641,7 +585,6 @@ function gerarBotoesOP() {
       if (!grupo || grupo === "N/A") return;
 
       const nomeCompleto = getNomeCompletoGrupo(grupo);
-      // MUDANÇA IMPORTANTE: Agora chama visualizarOrdemProducao() em vez de gerarOrdemProducaoPDF()
       containerOP.innerHTML += `
         <button onclick="visualizarOrdemProducao('${grupo}')" class="btn" style="background-color: #e3f2fd; color: #1976d2; border: 1px solid #bbdefb;">
           ${grupo} - ${nomeCompleto}
@@ -792,16 +735,21 @@ function processarPlanilha() {
   const statusDiv = document.getElementById("statusMessage");
   const processButton = document.getElementById("processButton");
 
-  statusDiv.textContent = "⏳ Processando...";
-  statusDiv.style.color = "#007bff";
-  processButton.disabled = true;
-  document.getElementById("downloadSection").style.display = "none";
+  if(statusDiv) {
+    statusDiv.textContent = "⏳ Processando...";
+    statusDiv.style.color = "#007bff";
+  }
+  if(processButton) processButton.disabled = true;
+  const downloadSection = document.getElementById("downloadSection");
+  if(downloadSection) downloadSection.style.display = "none";
 
   const file = fileInput.files[0];
   if (!file) {
-    statusDiv.textContent = "Erro: Nenhum arquivo selecionado.";
-    statusDiv.style.color = "red";
-    processButton.disabled = false;
+    if(statusDiv) {
+        statusDiv.textContent = "Erro: Nenhum arquivo selecionado.";
+        statusDiv.style.color = "red";
+    }
+    if(processButton) processButton.disabled = false;
     return;
   }
 
@@ -814,6 +762,12 @@ function processarPlanilha() {
       const sheetName = workbook.SheetNames[0];
       const worksheet = workbook.Sheets[sheetName];
 
+      // NOVO: LER O NÚMERO DA SEMANA (CÉLULA A4)
+      const celulaSemana = worksheet["A4"] ? String(worksheet["A4"].v || "").trim() : "";
+      const matchSemana = celulaSemana.match(/SEMANA\s\d+/i);
+      semanaDaPlanilha = matchSemana ? matchSemana[0].toUpperCase() : getSemanaAtualFormatada();
+      
+      // Intervalo de dados (a partir da linha 5 - índice 4)
       const range = XLSX.utils.decode_range(worksheet["!ref"]);
       range.s.r = 4;
       const newRange = XLSX.utils.encode_range(range);
@@ -880,15 +834,21 @@ function processarPlanilha() {
         todasCategorias.add(categoriaLimpa);
         todosGrupos.add(grupoLetra);
 
-        const chaveGeral = `${modeloLimpo}|${bojoNormalizado}|${categoriaLimpa}|${grupoLetra}|${statusOriginal}`;
-        const chaveDetalhe = `${modeloLimpo}|${bojoNormalizado}|${categoriaLimpa}|${dimensaoNormalizada}|${grupoLetra}|${statusOriginal}`;
+        // === MUDANÇA CRÍTICA AQUI ===
+        // Removemos 'modeloLimpo' da chave para agrupar tudo que for do mesmo grupo.
+        // Adicionamos 'grupoLetra', 'dimensao', 'material', 'status'.
+        const chaveGeral = `${grupoLetra}|${bojoNormalizado}|${categoriaLimpa}|${statusOriginal}`;
+        const chaveDetalhe = `${grupoLetra}|${bojoNormalizado}|${dimensaoNormalizada}|${statusOriginal}`;
+        
+        // Define o nome de exibição do grupo (ex: "VERTICAL ALTOS") para usar no lugar do nome do modelo
+        const nomeGrupoExibicao = MAPA_NOME_GRUPO[grupoLetra] || modeloLimpo;
 
         if (lotesGeraisMap[chaveGeral]) {
           lotesGeraisMap[chaveGeral]["QUANTIDADE TOTAL"]++;
         } else {
           lotesGeraisMap[chaveGeral] = {
             GRUPO: grupoLetra,
-            LINHA: modeloLimpo,
+            LINHA: nomeGrupoExibicao, // Usa o nome do Grupo
             BOJO: bojoNormalizado,
             ALINHAMENTOS: categoriaLimpa,
             STATUS: statusOriginal,
@@ -901,9 +861,9 @@ function processarPlanilha() {
         } else {
           lotesDetalhesMap[chaveDetalhe] = {
             GRUPO: grupoLetra,
-            LINHA: modeloLimpo,
+            LINHA: nomeGrupoExibicao, // Usa o nome do Grupo
             BOJO: bojoNormalizado,
-            ALINHAMENTOS: categoriaLimpa,
+            ALINHAMENTOS: categoriaLimpa, // Mantém a categoria do primeiro item encontrado
             DIMENSÃO: dimensaoNormalizada,
             STATUS: statusOriginal,
             "QUANTIDADE TOTAL": 1,
@@ -915,30 +875,38 @@ function processarPlanilha() {
       lotesDetalhes = Object.values(lotesDetalhesMap).sort((a, b) => a.LINHA.localeCompare(b.LINHA));
 
       if (linhasProcessadas === 0) {
-        statusDiv.textContent = `Nenhuma linha de dados processada.`;
-        statusDiv.style.color = "orange";
-        processButton.disabled = false;
+        if(statusDiv) {
+            statusDiv.textContent = `Nenhuma linha de dados processada.`;
+            statusDiv.style.color = "orange";
+        }
+        if(processButton) processButton.disabled = false;
         return;
       }
 
-      statusDiv.textContent = `✅ Processamento concluído! Itens processados: ${linhasProcessadas}.`;
-      statusDiv.style.color = "green";
-      document.getElementById("downloadSection").style.display = "block";
+      if(statusDiv) {
+        statusDiv.textContent = `✅ Processamento concluído! Itens processados: ${linhasProcessadas}.`;
+        statusDiv.style.color = "green";
+      }
+      if(downloadSection) downloadSection.style.display = "block";
       gerarBotoesFiltro();
       gerarBotoesOP();
     } catch (error) {
       console.error("Erro:", error);
-      statusDiv.textContent = `❌ Erro: ${error.message}`;
-      statusDiv.style.color = "red";
+      if(statusDiv) {
+        statusDiv.textContent = `❌ Erro: ${error.message}`;
+        statusDiv.style.color = "red";
+      }
     } finally {
-      processButton.disabled = false;
+      if(processButton) processButton.disabled = false;
     }
   };
 
   reader.onerror = (ex) => {
-    statusDiv.textContent = `❌ Erro ao ler o arquivo: ${ex.type}`;
-    statusDiv.style.color = "red";
-    processButton.disabled = false;
+    if(statusDiv) {
+        statusDiv.textContent = `❌ Erro ao ler o arquivo: ${ex.type}`;
+        statusDiv.style.color = "red";
+    }
+    if(processButton) processButton.disabled = false;
   };
 
   reader.readAsArrayBuffer(file);
