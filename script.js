@@ -71,7 +71,6 @@ const MAPA_MODELO_GRUPO = {
   "VACP-PVT/850": "A",
   "VACP-PVT/850 MA": "A",
   "VACP/850": "A",
-  "VACP/750": "A",
   "VACP/850 MA": "A",
   "VAHP-PVT/850 MA": "A",
   "VAHP-PVT/850": "A",
@@ -80,10 +79,7 @@ const MAPA_MODELO_GRUPO = {
   "VALP-PVT/850": "A",
   "VALP-PVT/850 MA": "A",
   "VALP/850": "A",
-  "VALP/750": "A",
-  "VALP/750 MA": "A",
   "VABP/850": "A",
-  "VABP/750": "A",
   "VALP/850 MA": "A",
   "VAH/850": "A",
   "VAL/850": "A",
@@ -98,7 +94,6 @@ const MAPA_MODELO_GRUPO = {
 
   // Grupo C (VIL-2P/900)
   "VIL-2P/900": "C",
-  "VIL-2P CENTRAL/1760": "C",
   "VIL-2P FRONTAL/900": "C",
 
   // Grupo D (VIL-2P/900 CANTO)
@@ -112,6 +107,7 @@ const MAPA_MODELO_GRUPO = {
   "VR1P/900": "F",
   "VR2P/900": "F",
   "VR2P/900 MA": "F",
+  "VR2PA/900 MA": "F",
   "VR2PA/900": "F",
   "VRQU/900": "F",
   "VRQR/900": "F",
@@ -119,12 +115,19 @@ const MAPA_MODELO_GRUPO = {
 
   // Grupo G
   "VRA1P/1040": "G",
+  
   "VRA2P/1040": "G",
+
   "VRAG (1,25) + VRA2P (2,50)/1040": "G",
+
   "VRAG/1040": "G",
+
   "VRAGR/1040": "G",
+
   "VRAG(3,75) + VRAG1P (1,25)/1040": "G",
+
   "VRAG2N/900": "G",
+
   "VRAG (2,50) +VRA1P (1,25)/1040": "G",
 
   // Grupo H
@@ -143,28 +146,43 @@ const MAPA_MODELO_GRUPO = {
 
   // Grupo L
   IRAS: "L",
+
+  // Grupo M
+  "VR2P/1040:": "M",
+
+  // Grupo N (Valp-750 e Variações)
+  "VACP/750": "N",
+  "VABP-PVT/750 MA": "N",
+  "VAHP/750": "N",
+  "VALP/750": "N",
+  "VALP/750 MA": "N",
+  "VABP/750": "N",
+
+// Grupo O
+  "VIL-2P CENTRAL/1760": "O"
 };
+
 
 // ====================================================================================
 // MAPA DE NOMES DE GRUPOS PARA EXIBIÇÃO
 // ====================================================================================
 
 const MAPA_NOME_GRUPO = {
-  A: "VERTICAL ALTOS",
-  B: "VERTICAL ALTOS",
-  C: "VERTICAL ALTOS",
-  D: "AÇOUGUE CURVO",
-  E: "AÇOUGUE CURVO",
-  F: "ILHAS",
-  G: "ILHAS CANTO",
-  H: "ILHAS",
-  I: "REFRIGERAÇÃO",
-  J: "REFRIGERAÇÃO ALTA",
-  K: "ILHAS PONTA",
-  L: "ILHAS 3P",
-  M: "INTELIGENTE",
-  N: "AÇOUGUE",
-  O: "INTELIGENTE",
+        A: "VERTICAL ALTO 850",
+        B: "AÇOUGUE CURVO",
+        C: "ESPECIAIS",
+        D: "ESPECIAIS 90",
+        E: "ESPECIAIS COM PORTA",
+        F: "PADARIA ESS",
+        G: "AÇOUGUE RETO",
+        H: "ESPECIAS 180",
+        I: "ESPECIAIS 3P",
+        J: "ILHAS CONGELADA",
+        K: "PADARIA CURVA",
+        L: "ACOPLADO",
+        M: "AÇOUGUE RETO 1040",
+        N: "VERTICAL ALTO 750",
+        O: "ESPECIAL CENTRAL 1760"
 };
 
 // ====================================================================================
@@ -206,21 +224,21 @@ function getNomeCompletoGrupo(grupo) {
 
 function getCategoriaGrupo(grupo) {
   const categorias = {
-    A: "EXPOSITORES - REFRIGERAÇÃO",
-    B: "EXPOSITORES - REFRIGERAÇÃO",
-    C: "EXPOSITORES - REFRIGERAÇÃO",
-    D: "EXPOSITORES - AÇOUGUE",
-    E: "EXPOSITORES - AÇOUGUE",
-    F: "ILHAS - CONGELADOS",
-    G: "ILHAS - CONGELADOS",
-    H: "ILHAS - CONGELADOS",
-    I: "REFRIGERAÇÃO",
-    J: "REFRIGERAÇÃO ALTA",
-    K: "ILHAS - PONTA",
-    L: "ILHAS - 3P",
-    M: "INTELIGENTE",
-    N: "AÇOUGUE",
-    O: "INTELIGENTE",
+        A: "VERTICAL ALTO 850",
+        B: "AÇOUGUE CURVO",
+        C: "ESPECIAIS",
+        D: "ESPECIAIS 90",
+        E: "ESPECIAIS COM PORTA",
+        F: "PADARIA ESS",
+        G: "AÇOUGUE RETO",
+        H: "ESPECIAS 180",
+        I: "ESPECIAIS 3P",
+        J: "ILHAS CONGELADA",
+        K: "PADARIA CURVA",
+        L: "ACOPLADO",
+        M: "AÇOUGUE RETO 1040",
+        N: "VERTICAL ALTO 750",
+        O: "ESPECIAL CENTRAL 1760"
   };
   return categorias[grupo] || "EXPOSITORES";
 }
