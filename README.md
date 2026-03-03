@@ -1,13 +1,19 @@
 # Extrator de EXCEL
 
-This project extracts data from Excel files.
+Este projeto é um extrator de dados de arquivos Excel. Ele permite que os usuários extraíam informações de planilhas de forma eficiente e rápida.
 
-## Demo Online
+## Funcionalidades
+- Extração de dados de diferentes formatos de planilhas
+- Suporte a versões mais recentes do Excel
+- Interface amigável
 
-You can see a live demo of the project at [Demo Online](https://viniciusdev00.github.io/Extrator-de-EXCEL/).
+## Demonstração
+Você pode ver uma demonstração do projeto no GitHub Pages: [Demo](https://viniciusdev00.github.io/Extrator-de-EXCEL/)
 
-## Installation
+## Como Usar
+1. Faça o download do projeto.
+2. Siga as instruções no arquivo de instalação.
+3. Execute o aplicativo e comece a extrair dados!
 
-Follow the steps below to install the required dependencies.
-
-...
+## Contribuições
+Contribuições são bem-vindas! Sinta-se à vontade para abrir issues ou enviar pull requests.
